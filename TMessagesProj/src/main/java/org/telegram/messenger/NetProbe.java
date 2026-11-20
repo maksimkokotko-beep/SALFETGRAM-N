@@ -33,6 +33,16 @@ public final class NetProbe {
     private NetProbe() {
     }
 
+    private static int rpcLines;
+
+    /** request-level trace for login debugging (bounded so it never floods) */
+    public static synchronized void rpc(String line) {
+        if (rpcLines++ > 200) {
+            return;
+        }
+        CrashLogWriter.log(line);
+    }
+
     public static void start(final Context ctx) {
         new Thread("sg-netprobe") {
             @Override
@@ -112,6 +122,10 @@ public final class NetProbe {
             CrashLogWriter.log("NET proxy err " + t);
         }
 
+        CrashLogWriter.log("NET iphttps " + http("https://1.1.1.1/cdn-cgi/trace"));
+        CrashLogWriter.log("NET dc443 " + rawTls("149.154.167.51", 443));
+        CrashLogWriter.log("NET dc80 " + rawTls("149.154.167.51", 80));
+
         try {
             ConnectionsManager cm = ConnectionsManager.getInstance(0);
             CrashLogWriter.log("NET state0=" + cm.getConnectionState() + " dc=" + cm.getCurrentDatacenterId());
@@ -134,24 +148,57 @@ public final class NetProbe {
         }
 
         int last = -1;
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 36; i++) {
             try {
                 ConnectionsManager cm = ConnectionsManager.getInstance(0);
                 int st = cm.getConnectionState();
                 if (st != last) {
                     last = st;
-                    CrashLogWriter.log("NET state=" + st + " dc=" + cm.getCurrentDatacenterId() + " t=" + (i * 2) + "s");
+                    CrashLogWriter.log("NET state=" + st + " dc=" + cm.getCurrentDatacenterId() + " t=" + (i * 5) + "s");
+                } else if (i % 12 == 11) {
+                    CrashLogWriter.log("NET alive state=" + st + " t=" + (i * 5) + "s");
                 }
             } catch (Throwable t) {
                 CrashLogWriter.log("NET state err " + t);
                 break;
             }
             try {
-                Thread.sleep(2000);
+                Thread.sleep(5000);
             } catch (InterruptedException ignore) {
             }
         }
         CrashLogWriter.log("NET done");
+    }
+
+    private static String rawTls(String ip, int port) {
+        java.net.Socket plain = null;
+        javax.net.ssl.SSLSocket ssl = null;
+        long t0 = System.currentTimeMillis();
+        try {
+            plain = new java.net.Socket();
+            plain.connect(new InetSocketAddress(ip, port), 4000);
+            plain.setSoTimeout(6000);
+            ssl = (javax.net.ssl.SSLSocket) javax.net.ssl.SSLSocketFactory.getDefault()
+                    .createSocket(plain, ip, port, true);
+            ssl.setSoTimeout(6000);
+            ssl.startHandshake();
+            return "tls ok " + (System.currentTimeMillis() - t0) + "ms";
+        } catch (Throwable t) {
+            return "ERR " + (System.currentTimeMillis() - t0) + "ms " + t;
+        } finally {
+            try {
+                if (ssl != null) {
+                    ssl.close();
+                }
+            } catch (Throwable ignore) {
+            }
+            try {
+                if (plain != null) {
+                    plain.close();
+                }
+            } catch (Throwable ignore) {
+            }
+        }
     }
 
     private static String http(String url) {

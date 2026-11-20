@@ -43,6 +43,7 @@ import org.telegram.messenger.FileUploadOperation;
 import org.telegram.messenger.KeepAliveJob;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.NetProbe;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.PushListenerController;
 import org.telegram.messenger.SharedConfig;
@@ -494,6 +495,14 @@ public class ConnectionsManager extends BaseController {
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d("send request " + object + " with token = " + requestToken);
         }
+        try {
+            final String rpcName = object.getClass().getSimpleName();
+            if (rpcName.startsWith("TL_auth_") || rpcName.startsWith("TL_help_") || rpcName.startsWith("TL_account_getPassword")) {
+                NetProbe.rpc("RPC send " + rpcName + " dc=" + datacenterId + " state=" + getConnectionState()
+                        + " proxy=" + SharedConfig.isProxyEnabled());
+            }
+        } catch (Throwable ignore) {
+        }
         // start request hook
         {
             // --- 不发送在线状态 ---
@@ -566,6 +575,15 @@ public class ConnectionsManager extends BaseController {
                     }
                     if (resp != null) {
                         resp.networkType = networkType;
+                    }
+                    try {
+                        final String rpcName = object.getClass().getSimpleName();
+                        if (error != null && error.code != -2000) {
+                            NetProbe.rpc("RPC " + rpcName + " err " + error.code + " " + error.text);
+                        } else if (rpcName.startsWith("TL_auth_") || rpcName.startsWith("TL_help_") || rpcName.startsWith("TL_account_getPassword")) {
+                            NetProbe.rpc("RPC " + rpcName + " ok");
+                        }
+                    } catch (Throwable ignore) {
                     }
                     if (BuildVars.LOGS_ENABLED) {
                         FileLog.d("java received " + resp + (error != null ? " error = " + error : "") + " messageId = 0x" + Long.toHexString(requestMsgId));

@@ -90,6 +90,14 @@ jobs:
           cat local.properties
           grep -n 'package_name' TMessagesProj/google-services.json
           chmod +x gradlew
+          # the native lib hard-codes the sha1 of the signing certificate and
+          # aborts JNI_OnLoad on mismatch, so bake in our own fingerprint
+          CERT_SHA1=$(keytool -exportcert -alias androidkey -keystore TMessagesProj/release.keystore -storepass android 2>/dev/null | openssl dgst -sha1 -r | cut -d' ' -f1 | tr 'a-f' 'A-F')
+          echo "CERT_SHA1=${CERT_SHA1}"
+          if [ -n "${CERT_SHA1}" ]; then
+            sed -i "s/3A0F57FE06485D0B90D0ACD990E3A30328E3988D/${CERT_SHA1}/" TMessagesProj/jni/integrity/integrity.cpp
+            grep -n 'SIGN =' TMessagesProj/jni/integrity/integrity.cpp
+          fi
 
       - name: Build
         run: |

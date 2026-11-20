@@ -33,7 +33,7 @@ public class NativeLoader {
             try {
                 f = new File((String) ApplicationInfo.class.getField("nativeLibraryDir").get(context.getApplicationInfo()));
             } catch (Throwable th) {
-                th.printStackTrace();
+                log.append("gdir: ").append(th).append('\n');
             }
         }
         if (f == null) {
@@ -54,11 +54,40 @@ public class NativeLoader {
         try {
             System.loadLibrary(LIB_NAME);
             nativeLoaded = true;
+            log.append("ok:loadLibrary\n");
             if (BuildVars.LOGS_ENABLED) {
                 FileLog.d("loaded normal lib");
             }
             return;
-        } catch (Error e) {
+        } catch (Throwable e) {
+            log.append("loadLibrary: ").append(e).append('\n');
+            FileLog.e(e);
+        }
+
+        // absolute path from the package's native library dir
+        try {
+            File dir = getNativeLibraryDir(context);
+            if (dir != null) {
+                File f = new File(dir, LIB_SO_NAME);
+                log.append("abs=").append(f.getAbsolutePath()).append(" exists=").append(f.exists()).append('\n');
+                try {
+                    String[] all = dir.list();
+                    if (all != null) {
+                        log.append("dirList=");
+                        for (String s : all) log.append(s).append(',');
+                        log.append('\n');
+                    }
+                } catch (Throwable ignore) {
+                }
+                System.load(f.getAbsolutePath());
+                nativeLoaded = true;
+                log.append("ok:abs\n");
+                return;
+            } else {
+                log.append("abs: no native dir\n");
+            }
+        } catch (Throwable e) {
+            log.append("abs: ").append(e).append('\n');
             FileLog.e(e);
         }
 
@@ -66,7 +95,8 @@ public class NativeLoader {
             System.loadLibrary(FileUtil.extLib(LIB_NAME).getPath());
             FileLog.d("loaded extracted lib");
             nativeLoaded = true;
-        } catch (Error e) {
+            log.append("ok:extracted\n");
+        } catch (Throwable e) {
             FileLog.e(e);
             log.append("184: ").append(e).append("\n");
         }

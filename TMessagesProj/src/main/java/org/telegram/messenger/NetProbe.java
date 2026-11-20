@@ -2,25 +2,25 @@ package org.telegram.messenger;
 
 import android.content.Context;
 
+import org.telegram.tgnet.ConnectionsManager;
+import org.telegram.tgnet.TLRPC;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-
-import org.telegram.tgnet.ConnectionsManager;
+import java.util.Arrays;
 
 /**
- * SALFETGRAM diagnostics: checks from inside the app whether Telegram servers
- * are reachable, and reports the result over the diag channel.
+ * SALFETGRAM diagnostics: checks from inside the app whether Telegram is
+ * reachable and whether an MTProto request actually completes.
  */
 public final class NetProbe {
 
     private static final String[] DCS = {
-            "149.154.167.51", // DC4
-            "149.154.175.53", // DC2
-            "91.108.56.130",  // DC5
+            "149.154.167.51",    // DC4 ipv4
+            "149.154.175.53",    // DC2 ipv4
+            "91.108.56.130",     // DC5 ipv4
+            "2001:b28:f23d:f001::a" // DC4 ipv6
     };
 
     private NetProbe() {
@@ -31,7 +31,7 @@ public final class NetProbe {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(6000);
+                    Thread.sleep(5000);
                 } catch (InterruptedException ignore) {
                 }
                 try {
@@ -44,13 +44,7 @@ public final class NetProbe {
     }
 
     private static void probe(Context ctx) {
-        try {
-            CrashLogWriter.log("NET start api_id=" + BuildVars.APP_ID
-                    + " hash=" + (BuildVars.APP_HASH == null ? "null" : (BuildVars.APP_HASH.length() + "ch"))
-                    + " native=" + NativeLoader.loaded());
-        } catch (Throwable t) {
-            CrashLogWriter.log("NET start err " + t);
-        }
+        CrashLogWriter.log("NET start api_id=" + BuildVars.APP_ID + " native=" + NativeLoader.loaded());
 
         try {
             long t0 = System.currentTimeMillis();
@@ -68,19 +62,20 @@ public final class NetProbe {
             Socket s = new Socket();
             long t0 = System.currentTimeMillis();
             try {
-                s.connect(new InetSocketAddress(ip, 443), 7000);
-                CrashLogWriter.log("NET tcp " + ip + ":443 OK " + (System.currentTimeMillis() - t0) + "ms");
-                try {
-                    SSLSocket ss = (SSLSocket) ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(s, ip, 443, true);
-                    ss.setSoTimeout(7000);
-                    ss.startHandshake();
-                    CrashLogWriter.log("NET tls " + ip + " OK " + ss.getSession().getProtocol());
-                    ss.close();
-                } catch (Throwable t) {
-                    CrashLogWriter.log("NET tls " + ip + " err " + t);
-                }
+                s.connect(new InetSocketAddress(ip, 443), 8000);
+                s.setTcpNoDelay(true);
+                // MTProto obfuscated2: the client starts with 64 random bytes.
+                // A live DC keeps the socket open and answers once it gets a valid frame.
+                byte[] head = new byte[64];
+                new java.util.Random().nextBytes(head);
+                head[56] = head[57] = head[58] = head[59] = 0xEF;
+                s.getOutputStream().write(head);
+                s.getOutputStream().flush();
+                s.setSoTimeout(5000);
+                int r = s.getInputStream().read();
+                CrashLogWriter.log("NET tcp " + ip + ":443 OK " + (System.currentTimeMillis() - t0) + "ms firstByte=" + r);
             } catch (Throwable t) {
-                CrashLogWriter.log("NET tcp " + ip + ":443 FAIL " + t);
+                CrashLogWriter.log("NET tcp " + ip + ":443 " + (System.currentTimeMillis() - t0) + "ms err " + t);
             } finally {
                 try {
                     s.close();
@@ -95,18 +90,38 @@ public final class NetProbe {
             CrashLogWriter.log("NET proxy err " + t);
         }
 
-        for (int i = 0; i < 5; i++) {
+        try {
+            TLRPC.TL_help_getConfig req = new TLRPC.TL_help_getConfig();
+            ConnectionsManager.getInstance(0).sendRequest(req, (response, error) -> {
+                if (error != null) {
+                    CrashLogWriter.log("NET rpc getConfig ERR " + error.code + " " + error.text);
+                } else {
+                    CrashLogWriter.log("NET rpc getConfig OK " + (response == null ? "null" : response.getClass().getSimpleName()));
+                }
+            });
+            CrashLogWriter.log("NET rpc getConfig sent");
+        } catch (Throwable t) {
+            CrashLogWriter.log("NET rpc send err " + t);
+        }
+
+        int last = -1;
+        for (int i = 0; i < 30; i++) {
             try {
                 ConnectionsManager cm = ConnectionsManager.getInstance(0);
-                CrashLogWriter.log("NET state=" + cm.getConnectionState() + " dc=" + cm.getCurrentDatacenterId());
+                int st = cm.getConnectionState();
+                if (st != last) {
+                    last = st;
+                    CrashLogWriter.log("NET state=" + st + " dc=" + cm.getCurrentDatacenterId() + " t=" + i * 2 + "s");
+                }
             } catch (Throwable t) {
                 CrashLogWriter.log("NET state err " + t);
                 break;
             }
             try {
-                Thread.sleep(4000);
+                Thread.sleep(2000);
             } catch (InterruptedException ignore) {
             }
         }
+        CrashLogWriter.log("NET probe done abis=" + Arrays.toString(android.os.Build.SUPPORTED_ABIS));
     }
 }

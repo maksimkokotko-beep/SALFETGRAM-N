@@ -383,7 +383,12 @@ public class ApplicationLoader extends Application {
         try {
             ConnectionsManager.native_setJava(false);
         } catch (UnsatisfiedLinkError error) {
-            throw new RuntimeException("can't load native libraries " +  Build.CPU_ABI + " lookup folder " + NativeLoader.getAbiFolder());
+            throw new RuntimeException("can't load native libraries " + Build.CPU_ABI
+                    + " lookup folder " + NativeLoader.getAbiFolder()
+                    + " | nativeLibraryDir=" + getApplicationInfo().nativeLibraryDir
+                    + " | extract=" + ((getApplicationInfo().flags & ApplicationInfo.FLAG_EXTRACT_NATIVE_LIBS) != 0)
+                    + " | abis=" + java.util.Arrays.toString(Build.SUPPORTED_ABIS)
+                    + " | log=" + NativeLoader.log, error);
         }
         try {
             CrashLogWriter.log("native_setJava ok");

@@ -178,8 +178,8 @@ public final class NetProbe {
             plain = new java.net.Socket();
             plain.connect(new InetSocketAddress(ip, port), 4000);
             plain.setSoTimeout(6000);
-            ssl = (javax.net.ssl.SSLSocket) javax.net.ssl.SSLSocketFactory.getDefault()
-                    .createSocket(plain, ip, port, true);
+            javax.net.ssl.SSLSocketFactory f = (javax.net.ssl.SSLSocketFactory) javax.net.ssl.SSLSocketFactory.getDefault();
+            ssl = (javax.net.ssl.SSLSocket) f.createSocket(plain, ip, port, true);
             ssl.setSoTimeout(6000);
             ssl.startHandshake();
             return "tls ok " + (System.currentTimeMillis() - t0) + "ms";

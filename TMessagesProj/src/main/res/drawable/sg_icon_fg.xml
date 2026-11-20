@@ -6,28 +6,24 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- paper plane, mirrored to point left -->
-    <path
-        android:fillColor="#E7EAEF"
-        android:pathData="M80.0,29.5 L23.8,53.5 L80.0,47.5 Z" />
-    <path
-        android:fillColor="#97A2AF"
-        android:pathData="M23.8,53.5 L80.0,77.5 L80.0,59.2 Z" />
-    <path
-        android:fillColor="#5B6675"
-        android:pathData="M80.0,47.5 L39.5,53.5 L80.0,59.2 Z" />
-
-    <!-- emphasized letter V -->
-    <path android:pathData="M36,39.5 L45.4,39.5 L52,58.4 L58.6,39.5 L68,39.5 L55.9,70.5 L48.1,70.5 Z">
+    <!-- one simplified paper plane, nose to the left; the notch in its tail
+         is the "V": it lives in the outline, there is no separate letter -->
+    <path android:pathData="M22,54 L84,30 L50,54 L84,78 Z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
-                android:startX="52"
-                android:startY="39.5"
-                android:endX="52"
-                android:endY="70.5"
-                android:startColor="#31E9D0"
-                android:endColor="#1289EA" />
+                android:startX="22"
+                android:startY="30"
+                android:endX="84"
+                android:endY="78"
+                android:startColor="#F4F7FB"
+                android:centerColor="#DCE4EF"
+                android:endColor="#A9B7CA" />
         </aapt:attr>
     </path>
+
+    <!-- folded underside: gives the plane depth, keeps it one shape -->
+    <path
+        android:pathData="M22,54 L50,54 L84,78 Z"
+        android:fillColor="#5E6B7E" />
 </vector>

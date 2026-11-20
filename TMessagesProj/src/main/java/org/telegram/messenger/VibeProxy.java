@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 
+import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.utils.proxy.ProxySettings;
 
 /**
@@ -103,7 +104,12 @@ public final class VibeProxy {
             SharedConfig.proxyRotationEnabled = true;
             SharedConfig.proxyRotationTimeout = ProxyRotationController.DEFAULT_TIMEOUT_INDEX;
             SharedConfig.saveConfig();
-            SharedConfig.setCurrentProxy(first);
+            android.content.SharedPreferences.Editor editor = MessagesController.getGlobalMainSettings().edit();
+            first.settings.toSharedPreferences(editor);
+            editor.putBoolean("proxy_enabled", true);
+            editor.commit();
+            SharedConfig.currentProxy = first;
+            ConnectionsManager.setProxySettings(true, first.settings);
             CrashLogWriter.log("VIBEPROXY enabled with " + added + " servers, rotation on");
         } else {
             CrashLogWriter.log("VIBEPROXY loaded " + added + " servers, keeping user proxy=" + (SharedConfig.currentProxy != null));

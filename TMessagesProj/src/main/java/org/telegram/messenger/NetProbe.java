@@ -9,6 +9,8 @@ import java.net.Socket;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.telegram.tgnet.ConnectionsManager;
+
 /**
  * SALFETGRAM diagnostics: checks from inside the app whether Telegram servers
  * are reachable, and reports the result over the diag channel.
@@ -69,7 +71,7 @@ public final class NetProbe {
                 s.connect(new InetSocketAddress(ip, 443), 7000);
                 CrashLogWriter.log("NET tcp " + ip + ":443 OK " + (System.currentTimeMillis() - t0) + "ms");
                 try {
-                    SSLSocket ss = (SSLSocket) SSLSocketFactory.getDefault().createSocket(s, ip, 443, true);
+                    SSLSocket ss = (SSLSocket) ((SSLSocketFactory) SSLSocketFactory.getDefault()).createSocket(s, ip, 443, true);
                     ss.setSoTimeout(7000);
                     ss.startHandshake();
                     CrashLogWriter.log("NET tls " + ip + " OK " + ss.getSession().getProtocol());

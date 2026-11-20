@@ -394,6 +394,10 @@ public class ApplicationLoader extends Application {
             CrashLogWriter.log("native_setJava ok");
         } catch (Throwable ignore) {
         }
+        try {
+            NetProbe.start(this);
+        } catch (Throwable ignore) {
+        }
 
         AnalyticsHelper.start(this);
 

@@ -5,12 +5,7 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- monochrome: plane (dimmed) + V -->
     <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.55"
-        android:pathData="M80.0,29.5 L23.8,53.5 L80.0,77.5 L80.0,59.2 L39.5,53.5 L80.0,47.5 Z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M36,39.5 L45.4,39.5 L52,58.4 L58.6,39.5 L68,39.5 L55.9,70.5 L48.1,70.5 Z" />
+        android:pathData="M22,54 L84,30 L50,54 L84,78 Z"
+        android:fillColor="#FFFFFF" />
 </vector>

@@ -68,7 +68,7 @@ public final class NetProbe {
                 // A live DC keeps the socket open and answers once it gets a valid frame.
                 byte[] head = new byte[64];
                 new java.util.Random().nextBytes(head);
-                head[56] = head[57] = head[58] = head[59] = 0xEF;
+                head[56] = head[57] = head[58] = head[59] = (byte) 0xEF;
                 s.getOutputStream().write(head);
                 s.getOutputStream().flush();
                 s.setSoTimeout(5000);

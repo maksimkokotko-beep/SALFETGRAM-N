@@ -99,6 +99,11 @@ public class ApplicationLoader extends Application {
 
     @Override
     protected void attachBaseContext(Context base) {
+        try {
+            CrashLogWriter.install(base);
+            CrashLogWriter.log("attachBaseContext pkg=" + base.getPackageName());
+        } catch (Throwable ignore) {
+        }
         super.attachBaseContext(base);
         try {
             applicationContext = getApplicationContext();
@@ -106,8 +111,16 @@ public class ApplicationLoader extends Application {
         }
         Thread.currentThread().setUncaughtExceptionHandler((thread, error) -> {
             Log.e("nagram", "from " + thread.toString(), error);
+            try {
+                CrashLogWriter.report(error, "thread handler " + thread.getName());
+            } catch (Throwable ignore) {
+            }
             AnalyticsHelper.captureException(error);
         });
+        try {
+            CrashLogWriter.log("attachBaseContext done");
+        } catch (Throwable ignore) {
+        }
     }
 
     public static ILocationServiceProvider getLocationServiceProvider() {
@@ -330,6 +343,10 @@ public class ApplicationLoader extends Application {
 
     @Override
     public void onCreate() {
+        try {
+            CrashLogWriter.log("ApplicationLoader.onCreate");
+        } catch (Throwable ignore) {
+        }
         applicationLoaderInstance = this;
         try {
             applicationContext = getApplicationContext();
@@ -358,11 +375,19 @@ public class ApplicationLoader extends Application {
         Utilities.stageQueue.postRunnable(() -> SignturesKt.checkMT(this));
 
         NativeLoader.initNativeLibs(ApplicationLoader.applicationContext);
+        try {
+            CrashLogWriter.log("native libs loaded: " + NativeLoader.getAbiFolder());
+        } catch (Throwable ignore) {
+        }
 
         try {
             ConnectionsManager.native_setJava(false);
         } catch (UnsatisfiedLinkError error) {
             throw new RuntimeException("can't load native libraries " +  Build.CPU_ABI + " lookup folder " + NativeLoader.getAbiFolder());
+        }
+        try {
+            CrashLogWriter.log("native_setJava ok");
+        } catch (Throwable ignore) {
         }
 
         AnalyticsHelper.start(this);
@@ -389,6 +414,10 @@ public class ApplicationLoader extends Application {
 
         LauncherIconController.tryFixLauncherIconIfNeeded();
         ProxyRotationController.init();
+        try {
+            CrashLogWriter.log("ApplicationLoader.onCreate complete");
+        } catch (Throwable ignore) {
+        }
 
         //if (BuildConfig.DEBUG_PRIVATE_VERSION) {
         //    Choreographer60FpsContent.getInstance().addFrameCallback(debugEverySecondChecks, 1);

@@ -45,7 +45,7 @@ jobs:
           echo "sdkmanager: $SDKM"
           yes | "$SDKM" --licenses > /dev/null 2>&1 || true
           "$SDKM" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0" \
-            "cmake;3.22.1" "ndk;${NDK_VERSION}" 2>&1 | tail -5
+            "cmake;3.22.1" "ndk;${NDK_VERSION}" 2>&1 | tail -3
           ls "$ANDROID_HOME/ndk"
 
       - name: ccache
@@ -64,13 +64,26 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Configure keys and sdk
+      - name: Configure keys, signing and sdk
         run: |
+          # keep the committed keystore if its password still works, else make a fresh one
+          if ! keytool -list -keystore TMessagesProj/release.keystore -storepass android -alias androidkey > /dev/null 2>&1; then
+            echo "committed keystore unusable, generating a new one"
+            rm -f TMessagesProj/release.keystore
+            keytool -genkeypair -v \
+              -keystore TMessagesProj/release.keystore \
+              -storepass android -keypass android -alias androidkey \
+              -keyalg RSA -keysize 2048 -validity 10950 \
+              -dname "CN=SalfetGram, OU=SalfetGram, O=SalfetGram, L=Moscow, C=RU"
+          fi
           {
             echo "sdk.dir=${ANDROID_HOME}"
             echo "ndk.dir=${ANDROID_HOME}/ndk/${NDK_VERSION}"
             echo "TELEGRAM_APP_ID=4"
             echo "TELEGRAM_APP_HASH=014b35b6184100b085b0d0572f9b5103"
+            echo "KEYSTORE_PASS=android"
+            echo "ALIAS_NAME=androidkey"
+            echo "ALIAS_PASS=android"
           } > local.properties
           sed -i "s/2000000000000/$(date +%s%N | cut -c1-13)/g" gradle.properties
           sed -i 's/xyz\.nextalone\.nagram/com.salfetgram.messenger/' TMessagesProj/google-services.json
@@ -89,3 +102,11 @@ jobs:
           name: SalfetGram-arm64
           path: TMessagesProj/build/outputs/apk/release/*.apk
           if-no-files-found: error
+
+      - name: Upload keystore
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signing-keystore
+          path: TMessagesProj/release.keystore
+          if-no-files-found: warn

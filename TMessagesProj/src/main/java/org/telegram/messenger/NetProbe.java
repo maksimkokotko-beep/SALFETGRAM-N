@@ -5,22 +5,29 @@ import android.content.Context;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
-import java.util.Arrays;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * SALFETGRAM diagnostics: checks from inside the app whether Telegram is
- * reachable and whether an MTProto request actually completes.
+ * SALFETGRAM diagnostics: identifies which network path the app actually uses
+ * (VPN tunnel or direct ISP), whether Telegram is reachable from it, and
+ * whether an MTProto request completes.
  */
 public final class NetProbe {
 
     private static final String[] DCS = {
-            "149.154.167.51",    // DC4 ipv4
-            "149.154.175.53",    // DC2 ipv4
-            "91.108.56.130",     // DC5 ipv4
-            "2001:b28:f23d:f001::a" // DC4 ipv6
+            "149.154.167.51",  // DC2
+            "149.154.175.53",  // DC4 mirror
+            "91.108.56.130"    // DC5
     };
 
     private NetProbe() {
@@ -31,7 +38,7 @@ public final class NetProbe {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(3000);
                 } catch (InterruptedException ignore) {
                 }
                 try {
@@ -47,13 +54,34 @@ public final class NetProbe {
         CrashLogWriter.log("NET start api_id=" + BuildVars.APP_ID + " native=" + NativeLoader.loaded());
 
         try {
-            long t0 = System.currentTimeMillis();
-            InetAddress[] all = InetAddress.getAllByName("api.telegram.org");
-            StringBuilder sb = new StringBuilder();
-            for (InetAddress a : all) {
-                sb.append(a.getHostAddress()).append(' ');
+            List<NetworkInterface> ifs = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface ni : ifs) {
+                if (!ni.isUp() || ni.isLoopback()) {
+                    continue;
+                }
+                StringBuilder sb = new StringBuilder();
+                for (InetAddress a : Collections.list(ni.getInetAddresses())) {
+                    if (a.isLoopbackAddress()) {
+                        continue;
+                    }
+                    sb.append(a.getHostAddress()).append(' ');
+                }
+                if (sb.length() > 0) {
+                    CrashLogWriter.log("NET if=" + ni.getName() + " " + sb);
+                }
             }
-            CrashLogWriter.log("NET dns api.telegram.org -> " + sb + (System.currentTimeMillis() - t0) + "ms");
+        } catch (Throwable t) {
+            CrashLogWriter.log("NET if err " + t);
+        }
+
+        CrashLogWriter.log("NET ip " + http("https://api.ipify.org"));
+        CrashLogWriter.log("NET example " + http("https://example.com"));
+        CrashLogWriter.log("NET tgorg " + http("https://telegram.org"));
+
+        try {
+            long t0 = System.currentTimeMillis();
+            InetAddress a = InetAddress.getByName("api.telegram.org");
+            CrashLogWriter.log("NET dns ok " + a.getHostAddress() + " " + (System.currentTimeMillis() - t0) + "ms");
         } catch (Throwable t) {
             CrashLogWriter.log("NET dns FAIL " + t);
         }
@@ -62,20 +90,10 @@ public final class NetProbe {
             Socket s = new Socket();
             long t0 = System.currentTimeMillis();
             try {
-                s.connect(new InetSocketAddress(ip, 443), 8000);
-                s.setTcpNoDelay(true);
-                // MTProto obfuscated2: the client starts with 64 random bytes.
-                // A live DC keeps the socket open and answers once it gets a valid frame.
-                byte[] head = new byte[64];
-                new java.util.Random().nextBytes(head);
-                head[56] = head[57] = head[58] = head[59] = (byte) 0xEF;
-                s.getOutputStream().write(head);
-                s.getOutputStream().flush();
-                s.setSoTimeout(5000);
-                int r = s.getInputStream().read();
-                CrashLogWriter.log("NET tcp " + ip + ":443 OK " + (System.currentTimeMillis() - t0) + "ms firstByte=" + r);
+                s.connect(new InetSocketAddress(ip, 443), 3000);
+                CrashLogWriter.log("NET tcp " + ip + " connect ok " + (System.currentTimeMillis() - t0) + "ms");
             } catch (Throwable t) {
-                CrashLogWriter.log("NET tcp " + ip + ":443 " + (System.currentTimeMillis() - t0) + "ms err " + t);
+                CrashLogWriter.log("NET tcp " + ip + " connect FAIL " + (System.currentTimeMillis() - t0) + "ms " + t);
             } finally {
                 try {
                     s.close();
@@ -91,27 +109,34 @@ public final class NetProbe {
         }
 
         try {
+            ConnectionsManager cm = ConnectionsManager.getInstance(0);
+            CrashLogWriter.log("NET state0=" + cm.getConnectionState() + " dc=" + cm.getCurrentDatacenterId());
+        } catch (Throwable t) {
+            CrashLogWriter.log("NET state0 err " + t);
+        }
+
+        try {
             TLRPC.TL_help_getConfig req = new TLRPC.TL_help_getConfig();
             ConnectionsManager.getInstance(0).sendRequest(req, (response, error) -> {
                 if (error != null) {
-                    CrashLogWriter.log("NET rpc getConfig ERR " + error.code + " " + error.text);
+                    CrashLogWriter.log("NET rpc ERR " + error.code + " " + error.text);
                 } else {
-                    CrashLogWriter.log("NET rpc getConfig OK " + (response == null ? "null" : response.getClass().getSimpleName()));
+                    CrashLogWriter.log("NET rpc OK " + (response == null ? "null" : response.getClass().getSimpleName()));
                 }
             });
-            CrashLogWriter.log("NET rpc getConfig sent");
+            CrashLogWriter.log("NET rpc sent");
         } catch (Throwable t) {
             CrashLogWriter.log("NET rpc send err " + t);
         }
 
         int last = -1;
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 20; i++) {
             try {
                 ConnectionsManager cm = ConnectionsManager.getInstance(0);
                 int st = cm.getConnectionState();
                 if (st != last) {
                     last = st;
-                    CrashLogWriter.log("NET state=" + st + " dc=" + cm.getCurrentDatacenterId() + " t=" + i * 2 + "s");
+                    CrashLogWriter.log("NET state=" + st + " dc=" + cm.getCurrentDatacenterId() + " t=" + (i * 2) + "s");
                 }
             } catch (Throwable t) {
                 CrashLogWriter.log("NET state err " + t);
@@ -122,6 +147,43 @@ public final class NetProbe {
             } catch (InterruptedException ignore) {
             }
         }
-        CrashLogWriter.log("NET probe done abis=" + Arrays.toString(android.os.Build.SUPPORTED_ABIS));
+        CrashLogWriter.log("NET done");
+    }
+
+    private static String http(String url) {
+        HttpURLConnection c = null;
+        try {
+            c = (HttpURLConnection) new URL(url).openConnection();
+            c.setConnectTimeout(6000);
+            c.setReadTimeout(6000);
+            c.setRequestProperty("User-Agent", "SalfetGram-probe");
+            int code = c.getResponseCode();
+            InputStream is = code >= 400 ? c.getErrorStream() : c.getInputStream();
+            StringBuilder sb = new StringBuilder();
+            if (is != null) {
+                BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                String line;
+                int n = 0;
+                while ((line = r.readLine()) != null && n < 2) {
+                    sb.append(line.trim()).append(' ');
+                    n++;
+                }
+                r.close();
+            }
+            String body = sb.toString().trim();
+            if (body.length() > 60) {
+                body = body.substring(0, 60);
+            }
+            return code + " " + body;
+        } catch (Throwable t) {
+            return "ERR " + t;
+        } finally {
+            if (c != null) {
+                try {
+                    c.disconnect();
+                } catch (Throwable ignore) {
+                }
+            }
+        }
     }
 }

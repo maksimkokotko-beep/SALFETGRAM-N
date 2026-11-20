@@ -422,6 +422,10 @@ public class ApplicationLoader extends Application {
         applicationHandler = new Handler(applicationContext.getMainLooper());
 
         LauncherIconController.tryFixLauncherIconIfNeeded();
+        try {
+            VibeProxy.install(this);
+        } catch (Throwable ignore) {
+        }
         ProxyRotationController.init();
         try {
             CrashLogWriter.log("ApplicationLoader.onCreate complete");

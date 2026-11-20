@@ -103,7 +103,11 @@ public final class NetProbe {
         }
 
         try {
-            CrashLogWriter.log("NET proxy=" + SharedConfig.currentProxy);
+            CrashLogWriter.log("NET proxy=" + SharedConfig.isProxyEnabled()
+                    + " " + (SharedConfig.currentProxy == null ? "none" : SharedConfig.currentProxy.settings.getType()
+                    + " " + SharedConfig.currentProxy.settings.getAddress() + ":" + SharedConfig.currentProxy.settings.getPort())
+                    + " pool=" + SharedConfig.proxyList.size()
+                    + " rotation=" + SharedConfig.proxyRotationEnabled);
         } catch (Throwable t) {
             CrashLogWriter.log("NET proxy err " + t);
         }

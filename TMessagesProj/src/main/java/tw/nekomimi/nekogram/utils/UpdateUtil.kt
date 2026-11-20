@@ -10,24 +10,24 @@ import org.telegram.ui.ActionBar.AlertDialog
 
 object UpdateUtil {
 
-    const val channelUsername = "nagram_channel"
-    const val channelUsernameTips = "NagramTips"
-    const val wikiUrl = "https://na-wiki.xtaolabs.com"
+    const val channelUsername = ""
+    const val channelUsernameTips = ""
+    const val wikiUrl = "https://github.com/maksimkokotko-beep/SALFETGRAM-N"
 
     @JvmStatic
     fun getChannelUrl(): String {
-        return "https://t.me/$channelUsername"
+        return "https://github.com/maksimkokotko-beep/SALFETGRAM-N"
     }
 
     @JvmStatic
     fun getTipsUrl(): String {
-        return "https://t.me/$channelUsernameTips"
+        return "https://github.com/maksimkokotko-beep/SALFETGRAM-N"
     }
 
     @JvmStatic
     fun postCheckFollowChannel(ctx: Context, currentAccount: Int) = UIUtil.runOnIoDispatcher {
 
-        if (MessagesController.getMainSettings(currentAccount).getBoolean("update_channel_skip", false)) return@runOnIoDispatcher
+        return@runOnIoDispatcher
 
         val messagesCollector = MessagesController.getInstance(currentAccount)
         val connectionsManager = ConnectionsManager.getInstance(currentAccount)

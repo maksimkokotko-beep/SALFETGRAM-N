@@ -301,7 +301,7 @@ android {
 
     applicationVariants.configureEach { variant ->
         variant.outputs.configureEach { output ->
-            String gramName = "SalfetGram"
+            String gramName = "VibeGram"
             String first = String.format("%s-v%s(%s)", gramName, versionName, versionCode)
             String name = outputFileName.replace("TMessagesProj", first)
             name = name.replace("-release", "")
@@ -441,7 +441,7 @@ sentry {
     org = "teampgm"
 
     // The slug of the Sentry project to use for uploading proguard mappings/source contexts.
-    projectName = "nagram"
+    projectName = "vibegram"
 
     // The authentication token to use for uploading proguard mappings/source contexts.
     // WARNING: Do not expose this token in your build.gradle files, but rather set an environment

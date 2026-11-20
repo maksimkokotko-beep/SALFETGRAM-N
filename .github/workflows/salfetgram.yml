@@ -1,4 +1,4 @@
-name: SalfetGram arm64
+name: VibeGram arm64
 
 on:
   workflow_dispatch:
@@ -74,7 +74,7 @@ jobs:
               -keystore TMessagesProj/release.keystore \
               -storepass android -keypass android -alias androidkey \
               -keyalg RSA -keysize 2048 -validity 10950 \
-              -dname "CN=SalfetGram, OU=SalfetGram, O=SalfetGram, L=Moscow, C=RU"
+              -dname "CN=VibeGram, OU=VibeGram, O=VibeGram, L=Moscow, C=RU"
           fi
           {
             echo "sdk.dir=${ANDROID_HOME}"
@@ -107,7 +107,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SalfetGram-arm64
+          name: VibeGram-arm64
           path: TMessagesProj/build/outputs/apk/release/*.apk
           if-no-files-found: error
 

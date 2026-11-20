@@ -46,7 +46,7 @@ public class UnifiedPushListenerServiceProvider implements PushListenerControlle
                 UnifiedPush.register(
                         ApplicationLoader.applicationContext,
                         "default",
-                        "Nagram Web Push",
+                        "VibeGram Web Push",
                         null
                 );
             } catch (Throwable e) {

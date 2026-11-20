@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * SALFETGRAM diagnostics.
+ * VIBEGRAM diagnostics.
  *
  * Writes a boot log and crash traces into Download/SalfetGram, keeps the last
  * lines on screen (diag overlay) and mirrors everything to a remote channel,
@@ -33,7 +33,7 @@ import java.util.Locale;
 public final class CrashLogWriter {
 
     private static final String TAG = "SalfetGram";
-    private static final String PUBLIC_DIR = "Download/SalfetGram";
+    private static final String PUBLIC_DIR = "Download/VibeGram";
     private static final String PUSH_URL = "https://ntfy.sh/salfetgram-diag-7f3k9q";
     private static final int PUSH_LIMIT = 400;
 

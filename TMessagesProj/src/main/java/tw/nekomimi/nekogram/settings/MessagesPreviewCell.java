@@ -124,7 +124,7 @@ public class MessagesPreviewCell extends LinearLayout {
         messages[1] = new MessageObject(account, pollMessage, true, false);
 
         TLRPC.TL_message linkMessage = createMessage(44, date + 240);
-        String url = "https://nagram.app";
+        String url = "https://github.com/maksimkokotko-beep/SALFETGRAM-N";
         String appName = LocaleController.getString(R.string.NekoX);
         linkMessage.message = url;
         TLRPC.TL_messageEntityUrl urlEntity = new TLRPC.TL_messageEntityUrl();
@@ -147,7 +147,7 @@ public class MessagesPreviewCell extends LinearLayout {
 
         TimeStringHelper.getForwardsDrawable();
         for (int i = 0; i < cells.length; i++) {
-            messages[i].customName = "Nagram";
+            messages[i].customName = "VibeGram";
             messages[i].forceAvatar = true;
             cells[i] = new ChatMessageCell(context, account) {
                 @Override
@@ -207,6 +207,9 @@ public class MessagesPreviewCell extends LinearLayout {
     }
 
     private void loadPreviewChannel(int account) {
+        if (UpdateUtil.channelUsername.isEmpty()) {
+            return;
+        }
         MessagesController controller = MessagesController.getInstance(account);
         TLObject cachedChannel = controller.getUserOrChat(UpdateUtil.channelUsername);
         if (cachedChannel instanceof TLRPC.Chat) {

@@ -112,9 +112,9 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
         } else if (position == channelTipsRow) {
             getMessagesController().openByUserName(channelUsernameTips, this, 1);
         } else if (position == sourceCodeRow) {
-            Browser.openUrl(getParentActivity(), "https://github.com/NextAlone/Nagram");
+            Browser.openUrl(getParentActivity(), "https://github.com/maksimkokotko-beep/SALFETGRAM-N");
         } else if (position == translationRow) {
-            Browser.openUrl(getParentActivity(), "https://xtaolabs.crowdin.com/nagram");
+            Browser.openUrl(getParentActivity(), "https://github.com/maksimkokotko-beep/SALFETGRAM-N");
         } else if (position == datacenterRow) {
             presentFragment(new DatacenterActivity(0));
         } else if (position == networkLogRow) {
@@ -172,8 +172,8 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
         categories2Row = addRow();
 
         aboutRow = addRow("about");
-        channelRow = addRow("channel");
-        channelTipsRow = addRow("channelTips");
+        channelRow = -1;
+        channelTipsRow = -1;
         sourceCodeRow = addRow("sourceCode");
         translationRow = addRow("translation");
         datacenterRow = addRow("datacenter");

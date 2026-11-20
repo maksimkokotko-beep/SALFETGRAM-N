@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * SALFETGRAM diagnostics: identifies which network path the app actually uses
+ * VIBEGRAM diagnostics: identifies which network path the app actually uses
  * (VPN tunnel or direct ISP), whether Telegram is reachable from it, and
  * whether an MTProto request completes.
  */

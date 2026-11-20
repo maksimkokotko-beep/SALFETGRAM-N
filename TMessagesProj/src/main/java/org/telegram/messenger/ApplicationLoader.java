@@ -110,7 +110,7 @@ public class ApplicationLoader extends Application {
         } catch (Throwable ignore) {
         }
         Thread.currentThread().setUncaughtExceptionHandler((thread, error) -> {
-            Log.e("nagram", "from " + thread.toString(), error);
+            Log.e("vibegram", "from " + thread.toString(), error);
             try {
                 CrashLogWriter.report(error, "thread handler " + thread.getName());
             } catch (Throwable ignore) {

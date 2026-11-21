@@ -35,6 +35,9 @@ import org.telegram.ui.Components.ButtonBounce;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.ProfileActivity;
 
+import xyz.nextalone.nagram.VibeGramAnims;
+import xyz.nextalone.nagram.VibeGramGlass;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -233,6 +236,10 @@ public class ProfileGiftsView extends View implements NotificationCenter.Notific
             canvas.rotate(rotate);
             final float scale = ascale * bounce.getScale(0.1f);
             canvas.scale(scale, scale);
+            // VibeGram: стеклянная линза вокруг подарка.
+            if (VibeGramAnims.isEnabled(VibeGramAnims.KEY_PROFILE)) {
+                VibeGramGlass.drawCircle(canvas, 0, 0, gsz / 2f + dpf2(2), 0.75f * alpha);
+            }
             particles.process();
             particles.draw(canvas, color, alpha);
             if (gradientPaint != null) {

@@ -51,6 +51,7 @@ import org.telegram.ui.Cells.ChatMessageCell;
 import org.telegram.ui.ProfileActivity;
 
 import xyz.nextalone.nagram.VibeGramAnims;
+import xyz.nextalone.nagram.VibeGramGlass;
 import xyz.nextalone.nagram.VibeGramStyle;
 
 import java.util.ArrayList;
@@ -362,6 +363,12 @@ public class ProfileActionsView extends View {
         float alphaFraction1 = Utilities.clamp01((fraction - 0.2f) / 0.8f) * styleAlpha;
         if (alphaFraction1 <= 0f) {
             return;
+        }
+
+        // VibeGram: стеклянная панель-док под круглыми кнопками.
+        if (VibeGramAnims.isEnabled(VibeGramAnims.KEY_PROFILE) && fraction > 0.6f) {
+            AndroidUtilities.rectTmp.set(xpadding, top, getMeasuredWidth() - xpadding, top + height);
+            VibeGramGlass.drawCard(canvas, AndroidUtilities.rectTmp, Math.min(height, getMeasuredWidth()) / 2f, 0.85f * alphaFraction1);
         }
 
         if (!ignoreRect) {

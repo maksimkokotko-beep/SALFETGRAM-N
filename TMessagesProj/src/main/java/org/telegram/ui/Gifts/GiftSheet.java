@@ -139,6 +139,9 @@ import org.telegram.ui.Stars.StarsIntroActivity;
 import org.telegram.ui.Stars.StarsReactionsSheet;
 import org.telegram.ui.Stories.recorder.HintView2;
 
+import xyz.nextalone.nagram.VibeGramAnims;
+import xyz.nextalone.nagram.VibeGramGlass;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -2936,6 +2939,11 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
             }
             if (clip) {
                 canvas.restore();
+            }
+
+            // VibeGram: жидкое стекло поверх карточки подарка.
+            if (VibeGramAnims.isEnabled(VibeGramAnims.KEY_CHAT_LIST)) {
+                VibeGramGlass.drawCard(canvas, rect, r, 0.6f);
             }
 
             if (selected > 0) {

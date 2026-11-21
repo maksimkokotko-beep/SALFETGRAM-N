@@ -62,6 +62,7 @@ import tw.nekomimi.nekogram.NekoConfig;
 import xyz.nextalone.nagram.NaConfig;
 import xyz.nextalone.nagram.TabStyle;
 import xyz.nextalone.nagram.VibeGramAnims;
+import xyz.nextalone.nagram.VibeGramStyle;
 
 public class ViewPagerFixed extends FrameLayout {
 
@@ -236,7 +237,8 @@ public class ViewPagerFixed extends FrameLayout {
             return;
         }
         final float p = Math.max(0f, Math.min(1f, progress));
-        final float scale = 0.86f + 0.14f * p;
+        final float minScale = 1f - Math.max(0f, Math.min(40f, VibeGramStyle.tabsScale())) / 100f;
+        final float scale = minScale + (1f - minScale) * p;
         view.setScaleX(scale);
         view.setScaleY(scale);
         view.setAlpha(0.15f + 0.85f * p);
@@ -336,7 +338,7 @@ public class ViewPagerFixed extends FrameLayout {
     }
 
     protected long getManualScrollDuration() {
-        return 540;
+        return VibeGramAnims.isEnabled(VibeGramAnims.KEY_TABS) ? VibeGramStyle.tabsDuration() : 540;
     }
 
     public static final int SELECTOR_TYPE_BUBBLE_STYLE = -2;

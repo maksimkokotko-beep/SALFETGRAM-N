@@ -15,6 +15,7 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.ui.ActionBar.Theme;
 
 import xyz.nextalone.nagram.VibeGramAnims;
+import xyz.nextalone.nagram.VibeGramStyle;
 
 /**
  * VibeGram: мягкое живое сияние поверх списка чатов. Слой не перехватывает
@@ -84,6 +85,10 @@ public class ChatListGlowView extends View {
     }
 
     private int accent() {
+        final int custom = VibeGramStyle.glowColor();
+        if (custom != 0) {
+            return custom;
+        }
         try {
             return Theme.getColor(Theme.key_windowBackgroundWhiteBlueText);
         } catch (Exception e) {
@@ -92,7 +97,7 @@ public class ChatListGlowView extends View {
     }
 
     private int blend(int color, int alpha) {
-        return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
+        return Color.argb(Math.max(0, Math.min(255, alpha)), Color.red(color), Color.green(color), Color.blue(color));
     }
 
     @Override
@@ -104,31 +109,32 @@ public class ChatListGlowView extends View {
         final float h = getHeight();
         final float phase = time * (float) (Math.PI * 2);
         final int accent = accent();
+        final float strength = Math.max(0f, Math.min(2f, VibeGramStyle.chatGlow() / 100f));
 
         // Верхнее сияние: пара мягких цветных пятен, медленно плавающих.
         final float topRadius = w * 0.85f;
         final float x1 = w * (0.22f + 0.12f * (float) Math.sin(phase));
         final float y1 = -topRadius * 0.35f + AndroidUtilities.dp(40) * (float) Math.cos(phase * 0.8f);
-        paint.setShader(new RadialGradient(x1, y1, topRadius, blend(accent, 44), Color.TRANSPARENT, Shader.TileMode.CLAMP));
+        paint.setShader(new RadialGradient(x1, y1, topRadius, blend(accent, Math.round(44 * strength)), Color.TRANSPARENT, Shader.TileMode.CLAMP));
         canvas.drawCircle(x1, y1, topRadius, paint);
 
         final int violet = 0xFF8B5CF6;
         final float x2 = w * (0.82f + 0.1f * (float) Math.cos(phase * 0.9f));
         final float y2 = -topRadius * 0.3f + AndroidUtilities.dp(30) * (float) Math.sin(phase * 1.1f);
-        paint.setShader(new RadialGradient(x2, y2, topRadius * 0.8f, blend(violet, 34), Color.TRANSPARENT, Shader.TileMode.CLAMP));
+        paint.setShader(new RadialGradient(x2, y2, topRadius * 0.8f, blend(violet, Math.round(34 * strength)), Color.TRANSPARENT, Shader.TileMode.CLAMP));
         canvas.drawCircle(x2, y2, topRadius * 0.8f, paint);
 
         // Снизу — второй очаг, чтобы экран не выглядел пустым у навигации.
         final float bottomRadius = w * 0.75f;
         final float x3 = w * (0.7f + 0.15f * (float) Math.sin(phase * 0.7f + 1.2f));
         final float y3 = h + bottomRadius * 0.55f;
-        paint.setShader(new RadialGradient(x3, y3, bottomRadius, blend(0xFF22D3EE, 26), Color.TRANSPARENT, Shader.TileMode.CLAMP));
+        paint.setShader(new RadialGradient(x3, y3, bottomRadius, blend(0xFF22D3EE, Math.round(26 * strength)), Color.TRANSPARENT, Shader.TileMode.CLAMP));
         canvas.drawCircle(x3, y3, bottomRadius, paint);
 
         // Лёгкий белый блик, проходящий по верху списка.
         final float bandTop = AndroidUtilities.dp(90) + AndroidUtilities.dp(60) * (float) Math.sin(phase * 0.6f);
         paint.setShader(new LinearGradient(0, bandTop - AndroidUtilities.dp(120), 0, bandTop + AndroidUtilities.dp(120),
-                new int[]{Color.TRANSPARENT, Color.argb(14, 255, 255, 255), Color.TRANSPARENT},
+                new int[]{Color.TRANSPARENT, Color.argb(Math.round(14 * strength), 255, 255, 255), Color.TRANSPARENT},
                 null, Shader.TileMode.CLAMP));
         canvas.drawRect(0, 0, w, AndroidUtilities.dp(300), paint);
         paint.setShader(null);

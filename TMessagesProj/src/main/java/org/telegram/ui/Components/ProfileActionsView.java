@@ -51,6 +51,7 @@ import org.telegram.ui.Cells.ChatMessageCell;
 import org.telegram.ui.ProfileActivity;
 
 import xyz.nextalone.nagram.VibeGramAnims;
+import xyz.nextalone.nagram.VibeGramStyle;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -268,8 +269,27 @@ public class ProfileActionsView extends View {
 
     public void updatePosition(float y, float newHeight) {
         currentHeight = newHeight;
-        setTranslationY(y);
+        baseY = y;
+        applyVgOffset();
         invalidate();
+    }
+
+    private float baseY;
+    private float vgDragX, vgDragY, vgLastX, vgLastY;
+
+    private void applyVgOffset() {
+        setTranslationX(VibeGramStyle.actionsDx() * AndroidUtilities.density + vgDragX);
+        setTranslationY(baseY + VibeGramStyle.actionsDy() * AndroidUtilities.density + vgDragY);
+    }
+
+    private void commitVgOffset() {
+        final float density = Math.max(1f, AndroidUtilities.density);
+        final float dx = VibeGramStyle.actionsDx() * density + vgDragX;
+        final float dy = VibeGramStyle.actionsDy() * density + vgDragY;
+        VibeGramStyle.setFloat(VibeGramStyle.ACTIONS_DX, Math.max(0f, Math.min(1f, dx / (300f * density) + 0.5f)));
+        VibeGramStyle.setFloat(VibeGramStyle.ACTIONS_DY, Math.max(0f, Math.min(1f, dy / (300f * density) + 0.5f)));
+        vgDragX = vgDragY = 0f;
+        applyVgOffset();
     }
 
     private float getItemWidth() {
@@ -337,7 +357,8 @@ public class ProfileActionsView extends View {
         lastAction = newLastAction;
 
         float fraction = Utilities.clamp01(height / targetHeight);
-        float alphaFraction1 = Utilities.clamp01((fraction - 0.2f) / 0.8f);
+        final float styleAlpha = Math.max(0f, Math.min(1f, VibeGramStyle.actionsAlpha() / 100f));
+        float alphaFraction1 = Utilities.clamp01((fraction - 0.2f) / 0.8f) * styleAlpha;
         if (alphaFraction1 <= 0f) {
             return;
         }
@@ -429,7 +450,7 @@ public class ProfileActionsView extends View {
             rimPaint.setAlpha(255);
         }
 
-        float alphaFraction2 = Utilities.clamp01((fraction - 0.4f) / 0.6f);
+        float alphaFraction2 = Utilities.clamp01((fraction - 0.4f) / 0.6f) * styleAlpha;
         if (alphaFraction2 > 0f) {
             for (int i = 0; i < c; i++) {
                 drawAction(canvas, actions.get(i), fraction, alphaFraction2);
@@ -502,7 +523,7 @@ public class ProfileActionsView extends View {
 
         // iOS-style row: a round translucent button with the label underneath.
         final float maxCircleForHeight = targetHeight - textHeight - dpf2(1.5f);
-        float circleSize = Math.min(action.rect.width() - dp(6), dp(46));
+        float circleSize = Math.min(action.rect.width() - dp(6), dp(VibeGramStyle.actionsSize()));
         if (circleSize > maxCircleForHeight) {
             circleSize = Math.max(dp(28), maxCircleForHeight);
         }
@@ -637,6 +658,26 @@ public class ProfileActionsView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (VibeGramStyle.editor()) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    vgLastX = event.getX();
+                    vgLastY = event.getY();
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    vgDragX += event.getX() - vgLastX;
+                    vgDragY += event.getY() - vgLastY;
+                    vgLastX = event.getX();
+                    vgLastY = event.getY();
+                    applyVgOffset();
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    commitVgOffset();
+                    return true;
+            }
+            return true;
+        }
         if (currentHeight < dp(8)) {
             return false;
         }

@@ -142,6 +142,10 @@ public class LiteModeSettingsActivity extends BaseFragment {
                 LiteMode.toggleFlag(item.flags, !value);
                 updateValues();
             } else if (item.viewType == VIEW_TYPE_SWITCH2) {
+                if (item.type == SWITCH_TYPE_VG_CUSTOMIZE) {
+                    presentFragment(new VibeGramCustomizeActivity());
+                    return;
+                }
                 if (item.type == SWITCH_TYPE_SMOOTH_TRANSITIONS) {
                     SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                     boolean animations = preferences.getBoolean("view_animations", true);
@@ -301,6 +305,10 @@ public class LiteModeSettingsActivity extends BaseFragment {
         items.add(Item.asSwitch("Сияние списка чатов", SWITCH_TYPE_VG_CHAT_GLOW));
         items.add(Item.asInfo("Всё включено по умолчанию. Можно выключить целиком или по одной анимации."));
 
+        items.add(Item.asHeader("Кастомизация VibeGram"));
+        items.add(Item.asSwitch("Редактор VibeGram", SWITCH_TYPE_VG_CUSTOMIZE));
+        items.add(Item.asInfo("Цвета, прозрачность, радиусы, отступы, размер кнопок и FX, пресеты и JSON."));
+
         adapter.setItems(oldItems, items);
     }
 
@@ -367,6 +375,7 @@ public class LiteModeSettingsActivity extends BaseFragment {
     public static final int SWITCH_TYPE_VG_PROFILE_FX = 8;
     public static final int SWITCH_TYPE_VG_TABS = 9;
     public static final int SWITCH_TYPE_VG_CHAT_GLOW = 10;
+    public static final int SWITCH_TYPE_VG_CUSTOMIZE = 11;
 
     private static String vibegramAnimKey(int type) {
         switch (type) {
@@ -464,6 +473,8 @@ public class LiteModeSettingsActivity extends BaseFragment {
                     SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                     boolean animations = preferences.getBoolean("view_animations", true);
                     textCell.setTextAndCheck(item.text, animations, false);
+                } else if (item.type == SWITCH_TYPE_VG_CUSTOMIZE) {
+                    textCell.setTextAndValue(item.text, "›", false);
                 } else {
                     textCell.setTextAndCheck(item.text, VibeGramAnims.isOn(vibegramAnimKey(item.type)), false);
                 }

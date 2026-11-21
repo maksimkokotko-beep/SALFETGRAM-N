@@ -16,10 +16,11 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.ui.ActionBar.Theme;
 
 import xyz.nextalone.nagram.VibeGramAnims;
+import xyz.nextalone.nagram.VibeGramStyle;
 
 /**
  * VibeGram: каждый чат в списке — стеклянная карточка с очертанием.
- * Рисуется поверх ячеек, но очень прозрачно, чтобы не мешать тексту.
+ * Все размеры, прозрачности и радиус берутся из редактора VibeGram.
  */
 public class ChatListGlassDecoration extends RecyclerView.ItemDecoration {
 
@@ -28,10 +29,6 @@ public class ChatListGlassDecoration extends RecyclerView.ItemDecoration {
     private final Paint topPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rect = new RectF();
     private final Rect bounds = new Rect();
-
-    private final float insetH = AndroidUtilities.dp(6);
-    private final float insetV = AndroidUtilities.dp(3);
-    private final float radius = AndroidUtilities.dp(18);
 
     private boolean enabled() {
         return VibeGramAnims.isEnabled(VibeGramAnims.KEY_CHAT_LIST);
@@ -43,18 +40,26 @@ public class ChatListGlassDecoration extends RecyclerView.ItemDecoration {
             return;
         }
         final boolean dark = Theme.isCurrentThemeDark();
-        final int fillTop = dark ? Color.argb(20, 255, 255, 255) : Color.argb(90, 255, 255, 255);
-        final int fillBottom = dark ? Color.argb(8, 255, 255, 255) : Color.argb(40, 255, 255, 255);
-        final int rimColor = dark ? Color.argb(38, 255, 255, 255) : Color.argb(110, 255, 255, 255);
-        final int topColor = dark ? Color.argb(90, 255, 255, 255) : Color.argb(170, 255, 255, 255);
+        final float radius = AndroidUtilities.dp(VibeGramStyle.chatRadius());
+        final float insetH = AndroidUtilities.dp(VibeGramStyle.chatInsetH());
+        final float insetV = AndroidUtilities.dp(VibeGramStyle.chatInsetV());
+        final int fillAlpha = Math.round(255 * VibeGramStyle.chatFill() / 100f * (dark ? 0.45f : 2.2f));
+        final int fillTop = Color.argb(Math.min(255, fillAlpha), 255, 255, 255);
+        final int fillBottom = Color.argb(Math.min(255, Math.round(fillAlpha * 0.4f)), 255, 255, 255);
+        final int rimColor = Color.argb(Math.min(255, Math.round(255 * VibeGramStyle.chatRim() / 100f)), 255, 255, 255);
+        final int topColor = Color.argb(Math.min(255, Math.round(255 * VibeGramStyle.chatTop() / 100f)), 255, 255, 255);
 
         rimPaint.setStyle(Paint.Style.STROKE);
-        rimPaint.setStrokeWidth(AndroidUtilities.dp(1f));
+        rimPaint.setStrokeWidth(AndroidUtilities.dp(VibeGramStyle.chatRimWidth()));
         rimPaint.setColor(rimColor);
 
         topPaint.setStyle(Paint.Style.STROKE);
-        topPaint.setStrokeWidth(AndroidUtilities.dp(1.2f));
+        topPaint.setStrokeWidth(AndroidUtilities.dp(Math.max(0.8f, VibeGramStyle.chatRimWidth() + 0.2f)));
         topPaint.setColor(topColor);
+
+        if (radius <= 0f) {
+            return;
+        }
 
         for (int i = 0; i < parent.getChildCount(); i++) {
             final View child = parent.getChildAt(i);
@@ -71,11 +76,13 @@ public class ChatListGlassDecoration extends RecyclerView.ItemDecoration {
             canvas.drawRoundRect(rect, radius, radius, fillPaint);
             fillPaint.setShader(null);
 
-            canvas.drawRoundRect(rect, radius, radius, rimPaint);
+            if (VibeGramStyle.chatRimWidth() > 0f) {
+                canvas.drawRoundRect(rect, radius, radius, rimPaint);
+            }
 
             // Верхняя световая кромка, как у стекла.
             canvas.save();
-            canvas.clipRect(rect.left, rect.top, rect.right, rect.top + radius);
+            canvas.clipRect(rect.left, rect.top, rect.right, rect.top + Math.min(radius, rect.height() / 2f));
             canvas.drawRoundRect(rect, radius, radius, topPaint);
             canvas.restore();
         }

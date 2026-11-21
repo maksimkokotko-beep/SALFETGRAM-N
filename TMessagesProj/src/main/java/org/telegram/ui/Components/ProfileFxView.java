@@ -151,7 +151,7 @@ public class ProfileFxView extends View {
         final float glareWidth = size * 1.35f;
         final float glareHeight = size * 2.6f;
         glareRect.set(cx - glareWidth / 2f, cy - glareHeight / 2f, cx + glareWidth / 2f, cy + glareHeight / 2f);
-        final int glarePeak = Color.argb(66, 255, 255, 255);
+        final int glarePeak = Color.argb(88, 255, 255, 255);
         glarePaint.setShader(new LinearGradient(0, glareRect.top, 0, glareRect.bottom,
                 new int[]{Color.TRANSPARENT, Color.argb(10, 255, 255, 255), glarePeak, Color.argb(10, 255, 255, 255), Color.TRANSPARENT},
                 new float[]{0f, 0.32f, 0.5f, 0.68f, 1f}, Shader.TileMode.CLAMP));
@@ -170,7 +170,7 @@ public class ProfileFxView extends View {
             final float baseAngle = (float) (Math.PI * 2 * i / orbs);
             final float speed = i % 2 == 0 ? 1f : -0.75f;
             final float angle = baseAngle + phase * speed;
-            final float orbit = radius * (1.02f + 0.06f * (float) Math.sin(phase * 2f + i * 1.7f));
+            final float orbit = radius * (0.9f + 0.05f * (float) Math.sin(phase * 2f + i * 1.7f));
             final float ox = cx + (float) Math.cos(angle) * orbit;
             final float oy = cy + (float) Math.sin(angle) * orbit * 0.92f;
             final float orbR = AndroidUtilities.dp(5.5f + (i % 3) * 2.6f);

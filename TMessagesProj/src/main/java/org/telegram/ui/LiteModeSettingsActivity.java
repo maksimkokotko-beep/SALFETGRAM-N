@@ -291,7 +291,7 @@ public class LiteModeSettingsActivity extends BaseFragment {
 
         items.add(Item.asHeader("Анимации VibeGram"));
         items.add(Item.asSwitch("Все анимации VibeGram", SWITCH_TYPE_VG_MASTER));
-        items.add(Item.asSwitch("Анимация списка чатов", SWITCH_TYPE_VG_CHAT_LIST));
+        items.add(Item.asSwitch("Пружинные анимации сообщений", SWITCH_TYPE_VG_CHAT_LIST));
         items.add(Item.asSwitch("Анимация реакций", SWITCH_TYPE_VG_REACTIONS));
         items.add(Item.asSwitch("Плавная прокрутка", SWITCH_TYPE_VG_SCROLL));
         items.add(Item.asSwitch("Всплывающие подсказки", SWITCH_TYPE_VG_BULLETINS));

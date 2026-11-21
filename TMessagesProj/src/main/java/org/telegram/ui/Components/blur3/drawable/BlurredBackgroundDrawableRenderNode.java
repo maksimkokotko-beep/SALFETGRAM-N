@@ -4,11 +4,14 @@ import static org.telegram.messenger.AndroidUtilities.dp;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Outline;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.RenderNode;
+import android.graphics.Shader;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
@@ -17,6 +20,8 @@ import androidx.annotation.RequiresApi;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.blur3.LiquidGlassEffect;
 import org.telegram.ui.Components.blur3.source.BlurredBackgroundSource;
+
+import xyz.nextalone.nagram.NaConfig;
 
 @RequiresApi(api = Build.VERSION_CODES.Q)
 public class BlurredBackgroundDrawableRenderNode extends BlurredBackgroundDrawable {
@@ -30,6 +35,10 @@ public class BlurredBackgroundDrawableRenderNode extends BlurredBackgroundDrawab
     private final Paint paintShadow = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint paintStrokeTop = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint paintStrokeBottom = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint paintGlassSheen = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint paintGlassRim = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Path glassPath = new Path();
+    private final float[] glassRadii = new float[8];
 
     private boolean renderNodeInvalidated;
 
@@ -44,6 +53,7 @@ public class BlurredBackgroundDrawableRenderNode extends BlurredBackgroundDrawab
         this.paintShadow.setColor(0);
         this.paintStrokeTop.setStyle(Paint.Style.STROKE);
         this.paintStrokeBottom.setStyle(Paint.Style.STROKE);
+        this.paintGlassRim.setStyle(Paint.Style.STROKE);
     }
 
     @Override
@@ -99,6 +109,45 @@ public class BlurredBackgroundDrawableRenderNode extends BlurredBackgroundDrawab
         return renderNode.hasDisplayList();
     }
 
+    /**
+     * VibeGram: iOS-like glass needs more than edge refraction to read as
+     * glass. A soft specular sheen from the top-left corner plus a bright rim
+     * give the surface its "pane of glass" look in both themes.
+     */
+    private void drawGlassHighlights(Canvas c) {
+        final int w = boundProps.boundsWithPadding.width();
+        final int h = boundProps.boundsWithPadding.height();
+        if (w <= 0 || h <= 0) {
+            return;
+        }
+        if (NaConfig.INSTANCE.getDisableGlareEffects().Bool()) {
+            return;
+        }
+        final float maxRadius = Math.min(w, h) / 2f;
+        for (int i = 0; i < 8; i++) {
+            glassRadii[i] = Math.min(boundProps.shaderRadii[i], maxRadius);
+        }
+        glassPath.rewind();
+        glassPath.addRoundRect(0, 0, w, h, glassRadii, Path.Direction.CW);
+
+        paintGlassSheen.setShader(new LinearGradient(
+            0, 0, w * 0.25f, h,
+            new int[]{0x42FFFFFF, 0x1AFFFFFF, 0x00FFFFFF},
+            new float[]{0f, 0.4f, 1f},
+            Shader.TileMode.CLAMP
+        ));
+        c.drawPath(glassPath, paintGlassSheen);
+
+        paintGlassRim.setStrokeWidth(dp(1f));
+        paintGlassRim.setShader(new LinearGradient(
+            0, 0, w, h,
+            new int[]{0x7AFFFFFF, 0x1FFFFFFF},
+            null,
+            Shader.TileMode.CLAMP
+        ));
+        c.drawPath(glassPath, paintGlassRim);
+    }
+
     @Override
     public void updateDisplayList() {
         final float offsetX = sourceOffsetX;
@@ -116,8 +165,17 @@ public class BlurredBackgroundDrawableRenderNode extends BlurredBackgroundDrawab
         c.translate(-sL, -sT);
         if (liquidGlassEffect != null && Build.VERSION.SDK_INT >= 33) {
             final int thickness = Math.max(Math.min(
-                boundProps.liquidThickness <= 0 ? dp(11) : boundProps.liquidThickness,
+                boundProps.liquidThickness <= 0 ? dp(18) : boundProps.liquidThickness,
                 Math.min(boundProps.boundsWithPadding.width(), boundProps.boundsWithPadding.height()) / 5), 1);
+
+            // VibeGram: an opaque theme colour would completely hide the
+            // refraction, so the glass tint is always kept translucent.
+            int glassForeground = backgroundColor;
+            final int glassAlpha = Color.alpha(glassForeground);
+            if (glassAlpha > 0) {
+                final int targetAlpha = Math.min(255, Math.round(glassAlpha * 0.62f));
+                glassForeground = (glassForeground & 0x00FFFFFF) | (targetAlpha << 24);
+            }
 
             liquidGlassEffect.update(
                 0, 0, boundProps.boundsWithPadding.width(), boundProps.boundsWithPadding.height(),
@@ -125,7 +183,7 @@ public class BlurredBackgroundDrawableRenderNode extends BlurredBackgroundDrawab
                 thickness,
                 boundProps.liquidIntensity,
                 boundProps.liquidIndex,
-                backgroundColor
+                glassForeground
             );
         }
         source.draw(c, sL, sT, sR, sB);
@@ -134,11 +192,16 @@ public class BlurredBackgroundDrawableRenderNode extends BlurredBackgroundDrawab
 
 
         c = renderNode.beginRecording();
-        if (Color.alpha(backgroundColor) == 255) {
+        if (liquidGlassEffect != null) {
+            // Always draw the refracted content, even under an opaque theme
+            // colour, and put the specular highlights on top of it.
+            c.drawRenderNode(renderNodeFill);
+            drawGlassHighlights(c);
+        } else if (Color.alpha(backgroundColor) == 255) {
             c.drawColor(backgroundColor);
         } else {
             c.drawRenderNode(renderNodeFill);
-            if (liquidGlassEffect == null && Color.alpha(backgroundColor) != 0) {
+            if (Color.alpha(backgroundColor) != 0) {
                 c.drawColor(backgroundColor);
             }
         }

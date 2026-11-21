@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import xyz.nextalone.nagram.VibeGramAnims;
+
 public class ChatListItemAnimator extends DefaultItemAnimator {
 
     public static final long DEFAULT_DURATION = 250;
@@ -70,7 +72,9 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
         this.resourcesProvider = resourcesProvider;
         this.activity = activity;
         this.recyclerListView = listView;
-        translationInterpolator = DEFAULT_INTERPOLATOR;
+        translationInterpolator = VibeGramAnims.isEnabled(VibeGramAnims.KEY_CHAT_LIST)
+            ? new OvershootInterpolator(0.85f)
+            : DEFAULT_INTERPOLATOR;
         alwaysCreateMoveAnimationIfPossible = true;
         setSupportsChangeAnimations(false);
     }
@@ -1509,7 +1513,12 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
             animatorSet.setInterpolator(new OvershootInterpolator());
         } else {
             animatorSet.setStartDelay(currentDelay);
-            animatorSet.setDuration(DEFAULT_DURATION);
+            if (VibeGramAnims.isEnabled(VibeGramAnims.KEY_CHAT_LIST)) {
+                animatorSet.setDuration(320);
+                animatorSet.setInterpolator(new OvershootInterpolator(0.8f));
+            } else {
+                animatorSet.setDuration(DEFAULT_DURATION);
+            }
         }
 
         animatorSet.addListener(new AnimatorListenerAdapter() {
@@ -1628,12 +1637,12 @@ public class ChatListItemAnimator extends DefaultItemAnimator {
 
     @Override
     public long getMoveDuration() {
-        return DEFAULT_DURATION;
+        return VibeGramAnims.isEnabled(VibeGramAnims.KEY_CHAT_LIST) ? 340 : DEFAULT_DURATION;
     }
 
     @Override
     public long getChangeDuration() {
-        return DEFAULT_DURATION;
+        return VibeGramAnims.isEnabled(VibeGramAnims.KEY_CHAT_LIST) ? 320 : DEFAULT_DURATION;
     }
 
     public void runOnAnimationEnd(Runnable runnable) {

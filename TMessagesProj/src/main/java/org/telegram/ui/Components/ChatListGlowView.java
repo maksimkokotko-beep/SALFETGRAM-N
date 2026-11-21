@@ -35,12 +35,12 @@ public class ChatListGlowView extends View {
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
 
-    private boolean isEnabled() {
+    private boolean isGlowOn() {
         return VibeGramAnims.isEnabled(VibeGramAnims.KEY_CHAT_GLOW);
     }
 
     private void startAnimating() {
-        if (!isEnabled() || animator != null || getWindowVisibility() != VISIBLE) {
+        if (!isGlowOn() || animator != null || getWindowVisibility() != VISIBLE) {
             return;
         }
         animator = ValueAnimator.ofFloat(0f, 1f);
@@ -97,7 +97,7 @@ public class ChatListGlowView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (!isEnabled() || getWidth() == 0 || getHeight() == 0) {
+        if (!isGlowOn() || getWidth() == 0 || getHeight() == 0) {
             return;
         }
         final float w = getWidth();

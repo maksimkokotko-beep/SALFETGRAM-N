@@ -295,6 +295,7 @@ public class LiteModeSettingsActivity extends BaseFragment {
         items.add(Item.asSwitch("Анимация реакций", SWITCH_TYPE_VG_REACTIONS));
         items.add(Item.asSwitch("Плавная прокрутка", SWITCH_TYPE_VG_SCROLL));
         items.add(Item.asSwitch("Всплывающие подсказки", SWITCH_TYPE_VG_BULLETINS));
+        items.add(Item.asSwitch("Появление кнопок профиля", SWITCH_TYPE_VG_PROFILE));
         items.add(Item.asInfo("Всё включено по умолчанию. Можно выключить целиком или по одной анимации."));
 
         adapter.setItems(oldItems, items);
@@ -359,6 +360,7 @@ public class LiteModeSettingsActivity extends BaseFragment {
     public static final int SWITCH_TYPE_VG_REACTIONS = 4;
     public static final int SWITCH_TYPE_VG_SCROLL = 5;
     public static final int SWITCH_TYPE_VG_BULLETINS = 6;
+    public static final int SWITCH_TYPE_VG_PROFILE = 7;
 
     private static String vibegramAnimKey(int type) {
         switch (type) {
@@ -370,6 +372,8 @@ public class LiteModeSettingsActivity extends BaseFragment {
                 return VibeGramAnims.KEY_SMOOTH_SCROLL;
             case SWITCH_TYPE_VG_BULLETINS:
                 return VibeGramAnims.KEY_BULLETINS;
+            case SWITCH_TYPE_VG_PROFILE:
+                return VibeGramAnims.KEY_PROFILE;
             case SWITCH_TYPE_VG_MASTER:
             default:
                 return VibeGramAnims.KEY_MASTER;

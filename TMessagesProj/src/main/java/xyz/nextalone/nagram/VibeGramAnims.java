@@ -16,6 +16,7 @@ public final class VibeGramAnims {
     public static final String KEY_REACTIONS = "vibegram_anim_reactions";
     public static final String KEY_SMOOTH_SCROLL = "vibegram_anim_smooth_scroll";
     public static final String KEY_BULLETINS = "vibegram_anim_bulletins";
+    public static final String KEY_PROFILE = "vibegram_anim_profile";
 
     private VibeGramAnims() {
     }

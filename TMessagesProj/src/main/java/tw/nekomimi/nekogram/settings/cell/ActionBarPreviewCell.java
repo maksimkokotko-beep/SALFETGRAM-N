@@ -37,6 +37,7 @@ import org.telegram.ui.Components.LayoutHelper;
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.config.cell.ConfigCellCustom;
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.VibeGramLogo;
 
 @SuppressLint("ViewConstructor")
 public class ActionBarPreviewCell extends FrameLayout implements NotificationCenter.NotificationCenterDelegate {
@@ -169,7 +170,7 @@ public class ActionBarPreviewCell extends FrameLayout implements NotificationCen
             }
         }
         if (title.equals(LocaleController.getString(R.string.NekoX)) && !NaConfig.INSTANCE.getUseSystemFontInTitle().Bool()) {
-            Drawable logoDrawable = ContextCompat.getDrawable(getContext(), R.drawable.nagram_logo_2);
+            Drawable logoDrawable = VibeGramLogo.wordmark(getContext(), 90, 22);
             if (logoDrawable != null) {
                 logoDrawable = logoDrawable.mutate();
                 logoDrawable.setBounds(0, AndroidUtilities.dp(2), logoDrawable.getIntrinsicWidth(), AndroidUtilities.dp(2) + logoDrawable.getIntrinsicHeight());

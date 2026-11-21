@@ -1668,4 +1668,12 @@ object NaConfig {
             false
         )
     }
+
+    // VibeGram: earlier builds stored the old name as the custom action bar
+    // title, so it kept showing "Nagram" after the rebrand. Reset it once.
+    init {
+        if (customTitle.String() == "Nagram") {
+            customTitle.setConfigString("VibeGram")
+        }
+    }
 }

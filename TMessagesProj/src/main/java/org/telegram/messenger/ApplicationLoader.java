@@ -422,6 +422,11 @@ public class ApplicationLoader extends Application {
         applicationHandler = new Handler(applicationContext.getMainLooper());
 
         LauncherIconController.tryFixLauncherIconIfNeeded();
+        final android.content.Context vibegramContext = getApplicationContext();
+        try {
+            Utilities.globalQueue.post(() -> xyz.nextalone.nagram.VibeGramAssets.exportIconOnce(vibegramContext));
+        } catch (Throwable ignore) {
+        }
         try {
             VibeProxy.install(this);
         } catch (Throwable ignore) {

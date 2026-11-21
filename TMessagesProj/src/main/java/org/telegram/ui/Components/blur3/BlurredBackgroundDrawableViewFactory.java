@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
+import org.telegram.messenger.LiteMode;
 import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
 import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawableRenderNode;
 import org.telegram.ui.Components.blur3.drawable.color.BlurredBackgroundColorProvider;
@@ -73,7 +74,7 @@ public class BlurredBackgroundDrawableViewFactory {
     }
 
 
-    private boolean isLiquidGlassEffectAllowed;
+    private boolean isLiquidGlassEffectAllowed = true;
 
     public void setLiquidGlassEffectAllowed(boolean liquidGlassEffectAllowed) {
         isLiquidGlassEffectAllowed = liquidGlassEffectAllowed;
@@ -97,7 +98,7 @@ public class BlurredBackgroundDrawableViewFactory {
 
     public BlurredBackgroundDrawable create(View view, BlurredBackgroundColorProvider provider, boolean multiwindow) {
         final BlurredBackgroundDrawable drawable = source.createDrawable();
-        if (isLiquidGlassEffectAllowed && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (isLiquidGlassEffectAllowed && LiteMode.isEnabled(LiteMode.FLAG_LIQUID_GLASS) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (drawable instanceof BlurredBackgroundDrawableRenderNode) {
                 ((BlurredBackgroundDrawableRenderNode) drawable).setLiquidGlassEffectAllowed();
             }

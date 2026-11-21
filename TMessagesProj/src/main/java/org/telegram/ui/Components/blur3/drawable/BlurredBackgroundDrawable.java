@@ -241,7 +241,7 @@ public abstract class BlurredBackgroundDrawable extends Drawable {
         public int padding;
         public boolean hasPadding;
         public int liquidThickness;
-        public float liquidIntensity = 0.75f;
+        public float liquidIntensity = 0.92f;
         public float liquidIndex = 1.5f;
 
         public float strokeWidthTop;

@@ -74,7 +74,7 @@ public class RecyclerAnimationScrollHelper {
         }
 
         int n = recyclerView.getChildCount();
-        if (n == 0 || !MessagesController.getGlobalMainSettings().getBoolean("view_animations", true)) {
+        if (n == 0 || !MessagesController.getGlobalMainSettings().getBoolean("view_animations", true) || !xyz.nextalone.nagram.VibeGramAnims.isEnabled(xyz.nextalone.nagram.VibeGramAnims.KEY_SMOOTH_SCROLL)) {
             layoutManager.scrollToPositionWithOffset(position, offset, bottom);
             return;
         }

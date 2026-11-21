@@ -508,7 +508,8 @@ public class Bulletin {
     }
 
     private static boolean isTransitionsEnabled() {
-        return MessagesController.getGlobalMainSettings().getBoolean("view_animations", true);
+        return MessagesController.getGlobalMainSettings().getBoolean("view_animations", true)
+            && xyz.nextalone.nagram.VibeGramAnims.isEnabled(xyz.nextalone.nagram.VibeGramAnims.KEY_BULLETINS);
     }
 
     public void updatePosition() {

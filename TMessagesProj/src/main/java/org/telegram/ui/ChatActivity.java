@@ -402,6 +402,7 @@ import tw.nekomimi.nekogram.utils.PGPUtil;
 import tw.nekomimi.nekogram.utils.ProxyUtil;
 import tw.nekomimi.nekogram.utils.TelegramUtil;
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.VibeGramAnims;
 import xyz.nextalone.nagram.helper.MemberAdminActions;
 import xyz.nextalone.nagram.helper.DoubleTap;
 import xyz.nextalone.nagram.helper.MessageHelper;
@@ -6882,7 +6883,7 @@ public class ChatActivity extends BaseFragment implements
         paddingTopHeight = 0;
         botDraftHeightController.setRecyclerView(chatListView);
         invalidateChatListViewTopPadding();
-        if (MessagesController.getGlobalMainSettings().getBoolean("view_animations", true)) {
+        if (MessagesController.getGlobalMainSettings().getBoolean("view_animations", true) && VibeGramAnims.isEnabled(VibeGramAnims.KEY_CHAT_LIST)) {
             chatListItemAnimator = new ChatListItemAnimator(this, chatListView, themeDelegate) {
 
                 Runnable finishRunnable;

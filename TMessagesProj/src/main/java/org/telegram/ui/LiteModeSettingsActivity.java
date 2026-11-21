@@ -72,6 +72,7 @@ import org.telegram.ui.Components.ThanosEffect;
 import java.util.ArrayList;
 
 import tw.nekomimi.nekogram.NekoConfig;
+import xyz.nextalone.nagram.VibeGramAnims;
 
 public class LiteModeSettingsActivity extends BaseFragment {
 
@@ -149,6 +150,11 @@ public class LiteModeSettingsActivity extends BaseFragment {
                     SharedConfig.setAnimationsEnabled(!animations);
                     editor.commit();
                     ((TextCell) view).setChecked(!animations);
+                } else {
+                    final String key = vibegramAnimKey(item.type);
+                    VibeGramAnims.toggle(key);
+                    ((TextCell) view).setChecked(VibeGramAnims.isOn(key));
+                    adapter.notifyItemRangeChanged(0, items.size());
                 }
             }
         });
@@ -283,6 +289,14 @@ public class LiteModeSettingsActivity extends BaseFragment {
         items.add(Item.asSwitch(LocaleController.getString(R.string.LiteSmoothTransitions), SWITCH_TYPE_SMOOTH_TRANSITIONS));
         items.add(Item.asInfo(LocaleController.getString("LiteSmoothTransitionsInfo")));
 
+        items.add(Item.asHeader("Анимации VibeGram"));
+        items.add(Item.asSwitch("Все анимации VibeGram", SWITCH_TYPE_VG_MASTER));
+        items.add(Item.asSwitch("Анимация списка чатов", SWITCH_TYPE_VG_CHAT_LIST));
+        items.add(Item.asSwitch("Анимация реакций", SWITCH_TYPE_VG_REACTIONS));
+        items.add(Item.asSwitch("Плавная прокрутка", SWITCH_TYPE_VG_SCROLL));
+        items.add(Item.asSwitch("Всплывающие подсказки", SWITCH_TYPE_VG_BULLETINS));
+        items.add(Item.asInfo("Всё включено по умолчанию. Можно выключить целиком или по одной анимации."));
+
         adapter.setItems(oldItems, items);
     }
 
@@ -340,6 +354,27 @@ public class LiteModeSettingsActivity extends BaseFragment {
     private static final int VIEW_TYPE_SWITCH2 = 5;
 
     public static final int SWITCH_TYPE_SMOOTH_TRANSITIONS = 1;
+    public static final int SWITCH_TYPE_VG_MASTER = 2;
+    public static final int SWITCH_TYPE_VG_CHAT_LIST = 3;
+    public static final int SWITCH_TYPE_VG_REACTIONS = 4;
+    public static final int SWITCH_TYPE_VG_SCROLL = 5;
+    public static final int SWITCH_TYPE_VG_BULLETINS = 6;
+
+    private static String vibegramAnimKey(int type) {
+        switch (type) {
+            case SWITCH_TYPE_VG_CHAT_LIST:
+                return VibeGramAnims.KEY_CHAT_LIST;
+            case SWITCH_TYPE_VG_REACTIONS:
+                return VibeGramAnims.KEY_REACTIONS;
+            case SWITCH_TYPE_VG_SCROLL:
+                return VibeGramAnims.KEY_SMOOTH_SCROLL;
+            case SWITCH_TYPE_VG_BULLETINS:
+                return VibeGramAnims.KEY_BULLETINS;
+            case SWITCH_TYPE_VG_MASTER:
+            default:
+                return VibeGramAnims.KEY_MASTER;
+        }
+    }
 
     private class Adapter extends AdapterWithDiffUtils {
 
@@ -413,6 +448,8 @@ public class LiteModeSettingsActivity extends BaseFragment {
                     SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                     boolean animations = preferences.getBoolean("view_animations", true);
                     textCell.setTextAndCheck(item.text, animations, false);
+                } else {
+                    textCell.setTextAndCheck(item.text, VibeGramAnims.isOn(vibegramAnimKey(item.type)), false);
                 }
             }
         }

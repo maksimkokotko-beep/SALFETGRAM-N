@@ -40,6 +40,8 @@ import org.telegram.ui.Components.ReactionsContainerLayout;
 import org.telegram.ui.Components.conference.message.GroupCallMessageCell;
 import org.telegram.ui.SelectAnimatedEmojiDialog;
 
+import xyz.nextalone.nagram.VibeGramAnims;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -754,7 +756,8 @@ public class ReactionsEffectOverlay {
         if (cell == null || visibleReaction == null || baseFragment == null || baseFragment.getParentActivity() == null) {
             return;
         }
-        boolean animationEnabled = MessagesController.getGlobalMainSettings().getBoolean("view_animations", true);
+        boolean animationEnabled = MessagesController.getGlobalMainSettings().getBoolean("view_animations", true)
+            && VibeGramAnims.isEnabled(VibeGramAnims.KEY_REACTIONS);
         if (!animationEnabled) {
             return;
         }

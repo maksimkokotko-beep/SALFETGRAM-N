@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import tw.nekomimi.nekogram.NekoConfig;
 import xyz.nextalone.nagram.NaConfig;
 import xyz.nextalone.nagram.TabStyle;
+import xyz.nextalone.nagram.VibeGramAnims;
 
 public class ViewPagerFixed extends FrameLayout {
 
@@ -222,6 +223,34 @@ public class ViewPagerFixed extends FrameLayout {
     }
 
     private ValueAnimator manualScrolling;
+    private void prepareTabTransition(View view) {
+        if (view == null) {
+            return;
+        }
+        view.setPivotX(view.getMeasuredWidth() / 2f);
+        view.setPivotY(view.getMeasuredHeight() / 2f);
+    }
+
+    private void setTabTransition(View view, float progress) {
+        if (view == null) {
+            return;
+        }
+        final float p = Math.max(0f, Math.min(1f, progress));
+        final float scale = 0.86f + 0.14f * p;
+        view.setScaleX(scale);
+        view.setScaleY(scale);
+        view.setAlpha(0.15f + 0.85f * p);
+    }
+
+    private void resetTabTransition(View view) {
+        if (view == null) {
+            return;
+        }
+        view.setScaleX(1f);
+        view.setScaleY(1f);
+        view.setAlpha(1f);
+    }
+
     public boolean scrollToPosition(int page) {
         if (page == currentPosition || (manualScrolling != null && nextPosition == page)) {
             return false;
@@ -245,6 +274,13 @@ public class ViewPagerFixed extends FrameLayout {
         }
 
         manualScrolling = ValueAnimator.ofFloat(0, 1);
+        final boolean tabFx = VibeGramAnims.isEnabled(VibeGramAnims.KEY_TABS);
+        if (tabFx) {
+            prepareTabTransition(viewPages[0]);
+            prepareTabTransition(viewPages[1]);
+            resetTabTransition(viewPages[0]);
+            setTabTransition(viewPages[1], 0f);
+        }
         manualScrolling.addUpdateListener(anm -> {
             float progress = (float) anm.getAnimatedValue();
             if (viewPages[1] == null) {
@@ -256,6 +292,10 @@ public class ViewPagerFixed extends FrameLayout {
             } else {
                 setTranslationX(viewPages[1], -viewPages[0].getMeasuredWidth() * (1f - progress));
                 setTranslationX(viewPages[0], viewPages[0].getMeasuredWidth() * progress);
+            }
+            if (tabFx) {
+                setTabTransition(viewPages[1], progress);
+                setTabTransition(viewPages[0], 1f - progress);
             }
             currentProgress = progress;
             onTabAnimationUpdate(true);
@@ -274,6 +314,9 @@ public class ViewPagerFixed extends FrameLayout {
                     removeView(viewPages[1]);
                     setTranslationX(viewPages[0], 0);
                     viewPages[1] = null;
+                }
+                if (viewPages[0] != null) {
+                    resetTabTransition(viewPages[0]);
                 }
                 manualScrolling = null;
                 onTabAnimationUpdate(true);

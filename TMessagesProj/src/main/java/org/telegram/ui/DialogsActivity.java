@@ -221,6 +221,7 @@ import org.telegram.ui.Components.Bulletin;
 import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.Components.ChatActivityEnterView;
 import org.telegram.ui.Components.ChatAvatarContainer;
+import org.telegram.ui.Components.ChatListGlowView;
 import org.telegram.ui.Components.CombinedDrawable;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.DialogsItemAnimator;
@@ -390,6 +391,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         private int dialogsType;
         private int archivePullViewState;
         private FlickerLoadingView progressView;
+        private ChatListGlowView glowView;
         private int lastItemsCount;
         private DialogsItemAnimator dialogsItemAnimator;
         private RecyclerItemsEnterAnimator recyclerItemsEnterAnimator;
@@ -4495,6 +4497,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             viewPage.listView.setLayoutManager(viewPage.layoutManager);
             viewPage.listView.setVerticalScrollbarPosition(LocaleController.isRTL ? RecyclerListView.SCROLLBAR_POSITION_LEFT : RecyclerListView.SCROLLBAR_POSITION_RIGHT);
             viewPage.addView(viewPage.listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+            viewPage.glowView = new ChatListGlowView(context);
+            viewPage.addView(viewPage.glowView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
             viewPage.listView.setOnItemClickListener((view, position, x, y) -> {
                 if (view instanceof GraySectionCell)
                     return;

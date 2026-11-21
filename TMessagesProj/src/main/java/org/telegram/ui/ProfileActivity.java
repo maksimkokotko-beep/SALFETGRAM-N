@@ -259,6 +259,7 @@ import org.telegram.ui.Components.LinkSpanDrawable;
 import org.telegram.ui.Components.MediaActivity;
 import org.telegram.ui.Components.MessagePrivateSeenView;
 import org.telegram.ui.Components.ProfileActionsView;
+import org.telegram.ui.Components.ProfileFxView;
 import org.telegram.ui.Components.ProfileGalleryBlurView;
 import org.telegram.ui.Components.Paint.PersistColorPalette;
 import org.telegram.ui.Components.Premium.LimitPreviewView;
@@ -445,6 +446,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private ImageView starBgItem, starFgItem;
     private TimerDrawable timerDrawable;
     private ProfileGalleryBlurView avatarsBlurView;
+    private ProfileFxView profileFxView;
     private ProfileGalleryView avatarsViewPager;
     private PagerIndicatorView avatarsViewPagerIndicatorView;
     private AvatarDrawable avatarDrawable;
@@ -5819,6 +5821,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             avatarsViewPager.setChatInfo(chatInfo);
         }
         avatarContainer2.addView(avatarsViewPager);
+        profileFxView = new ProfileFxView(context);
+        avatarContainer2.addView(profileFxView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         avatarContainer2.addView(avatarsBlurView, LayoutHelper.createFrame(-1, 74 + 64));
         avatarContainer2.addView(overlaysView);
         if (actionsView != null) {
@@ -6666,6 +6670,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         }
         if (actionsView != null) {
             actionsView.setParentExpanded(value);
+        }
+        if (profileFxView != null) {
+            profileFxView.setParentExpanded(value);
         }
         if (musicView != null) {
             musicView.setParentExpanded(value);

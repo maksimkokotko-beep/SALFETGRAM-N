@@ -296,6 +296,9 @@ public class LiteModeSettingsActivity extends BaseFragment {
         items.add(Item.asSwitch("Плавная прокрутка", SWITCH_TYPE_VG_SCROLL));
         items.add(Item.asSwitch("Всплывающие подсказки", SWITCH_TYPE_VG_BULLETINS));
         items.add(Item.asSwitch("Появление кнопок профиля", SWITCH_TYPE_VG_PROFILE));
+        items.add(Item.asSwitch("NFT, блики и сияние на аватаре", SWITCH_TYPE_VG_PROFILE_FX));
+        items.add(Item.asSwitch("Переходы экранов и вкладок", SWITCH_TYPE_VG_TABS));
+        items.add(Item.asSwitch("Сияние списка чатов", SWITCH_TYPE_VG_CHAT_GLOW));
         items.add(Item.asInfo("Всё включено по умолчанию. Можно выключить целиком или по одной анимации."));
 
         adapter.setItems(oldItems, items);
@@ -361,6 +364,9 @@ public class LiteModeSettingsActivity extends BaseFragment {
     public static final int SWITCH_TYPE_VG_SCROLL = 5;
     public static final int SWITCH_TYPE_VG_BULLETINS = 6;
     public static final int SWITCH_TYPE_VG_PROFILE = 7;
+    public static final int SWITCH_TYPE_VG_PROFILE_FX = 8;
+    public static final int SWITCH_TYPE_VG_TABS = 9;
+    public static final int SWITCH_TYPE_VG_CHAT_GLOW = 10;
 
     private static String vibegramAnimKey(int type) {
         switch (type) {
@@ -374,6 +380,12 @@ public class LiteModeSettingsActivity extends BaseFragment {
                 return VibeGramAnims.KEY_BULLETINS;
             case SWITCH_TYPE_VG_PROFILE:
                 return VibeGramAnims.KEY_PROFILE;
+            case SWITCH_TYPE_VG_PROFILE_FX:
+                return VibeGramAnims.KEY_PROFILE_FX;
+            case SWITCH_TYPE_VG_TABS:
+                return VibeGramAnims.KEY_TABS;
+            case SWITCH_TYPE_VG_CHAT_GLOW:
+                return VibeGramAnims.KEY_CHAT_GLOW;
             case SWITCH_TYPE_VG_MASTER:
             default:
                 return VibeGramAnims.KEY_MASTER;

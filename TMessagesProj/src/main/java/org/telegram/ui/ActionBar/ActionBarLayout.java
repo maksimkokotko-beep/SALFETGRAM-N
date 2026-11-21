@@ -98,6 +98,7 @@ import java.util.List;
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.utils.VibrateUtil;
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.VibeGramAnims;
 
 public class ActionBarLayout extends FrameLayout implements INavigationLayout, FloatingDebugProvider {
 
@@ -2269,8 +2270,8 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                 };
                 ArrayList<Animator> animators = new ArrayList<>();
                 animators.add(ObjectAnimator.ofFloat(this, View.ALPHA, 0.0f, 1.0f));
-                animators.add(ObjectAnimator.ofFloat(this, View.SCALE_X, 0.9f, 1.0f));
-                animators.add(ObjectAnimator.ofFloat(this, View.SCALE_Y, 0.9f, 1.0f));
+                animators.add(ObjectAnimator.ofFloat(this, View.SCALE_X, 0.88f, 1.0f));
+                animators.add(ObjectAnimator.ofFloat(this, View.SCALE_Y, 0.88f, 1.0f));
                 if (backgroundView != null) {
                     backgroundView.setVisibility(VISIBLE);
                     animators.add(ObjectAnimator.ofFloat(backgroundView, View.ALPHA, 0.0f, 1.0f));
@@ -2282,7 +2283,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                 currentAnimation = new AnimatorSet();
                 currentAnimation.playTogether(animators);
                 currentAnimation.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
-                currentAnimation.setDuration(200);
+                currentAnimation.setDuration(VibeGramAnims.isEnabled(VibeGramAnims.KEY_TABS) ? 300 : 200);
                 currentAnimation.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
@@ -2834,8 +2835,8 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
 
                 ArrayList<Animator> animators = new ArrayList<>();
                 animators.add(ObjectAnimator.ofFloat(this, View.ALPHA, 1.0f, 0.0f));
-                animators.add(ObjectAnimator.ofFloat(this, View.SCALE_X, 1.0f, 0.9f));
-                animators.add(ObjectAnimator.ofFloat(this, View.SCALE_Y, 1.0f, 0.9f));
+                animators.add(ObjectAnimator.ofFloat(this, View.SCALE_X, 1.0f, 0.88f));
+                animators.add(ObjectAnimator.ofFloat(this, View.SCALE_Y, 1.0f, 0.88f));
                 if (backgroundView != null) {
                     animators.add(ObjectAnimator.ofFloat(backgroundView, View.ALPHA, 1.0f, 0.0f));
                 }
@@ -2843,7 +2844,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                 currentAnimation = new AnimatorSet();
                 currentAnimation.playTogether(animators);
                 currentAnimation.setInterpolator(accelerateDecelerateInterpolator);
-                currentAnimation.setDuration(200);
+                currentAnimation.setDuration(VibeGramAnims.isEnabled(VibeGramAnims.KEY_TABS) ? 300 : 200);
                 currentAnimation.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animation) {

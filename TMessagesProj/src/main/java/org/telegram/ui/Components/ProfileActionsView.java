@@ -158,7 +158,7 @@ public class ProfileActionsView extends View {
 
     private Action callAction = null;
     private Action firstAction, lastAction;
-    final float xpadding;
+    float xpadding;
     final float ypadding;
     final float top;
     final float textPadding;
@@ -261,6 +261,7 @@ public class ProfileActionsView extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        xpadding = dpf2(VibeGramStyle.actionsSpacing());
         setMeasuredDimension(
                 MeasureSpec.getSize(widthMeasureSpec),
                 MeasureSpec.makeMeasureSpec((int) (targetHeight + top + ypadding), MeasureSpec.EXACTLY)

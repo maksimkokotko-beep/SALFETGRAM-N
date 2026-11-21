@@ -241,7 +241,8 @@ public class ViewPagerFixed extends FrameLayout {
         final float scale = minScale + (1f - minScale) * p;
         view.setScaleX(scale);
         view.setScaleY(scale);
-        view.setAlpha(0.15f + 0.85f * p);
+        final float minAlpha = Math.max(0f, Math.min(1f, VibeGramStyle.tabsAlpha() / 100f));
+        view.setAlpha(minAlpha + (1f - minAlpha) * p);
     }
 
     private void resetTabTransition(View view) {

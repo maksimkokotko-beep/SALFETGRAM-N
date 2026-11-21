@@ -89,11 +89,17 @@ public class ChatListGlowView extends View {
         if (custom != 0) {
             return custom;
         }
-        try {
-            return Theme.getColor(Theme.key_windowBackgroundWhiteBlueText);
-        } catch (Exception e) {
-            return 0xFF3B82F6;
+        return VibeGramStyle.accentColor();
+    }
+
+    private int shift(int color, float degrees) {
+        if (VibeGramStyle.customAccent() == 0) {
+            return color;
         }
+        final float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        hsv[0] = (hsv[0] + degrees) % 360f;
+        return Color.HSVToColor(hsv);
     }
 
     private int blend(int color, int alpha) {
@@ -118,7 +124,7 @@ public class ChatListGlowView extends View {
         paint.setShader(new RadialGradient(x1, y1, topRadius, blend(accent, Math.round(44 * strength)), Color.TRANSPARENT, Shader.TileMode.CLAMP));
         canvas.drawCircle(x1, y1, topRadius, paint);
 
-        final int violet = 0xFF8B5CF6;
+        final int violet = shift(0xFF8B5CF6, 60f);
         final float x2 = w * (0.82f + 0.1f * (float) Math.cos(phase * 0.9f));
         final float y2 = -topRadius * 0.3f + AndroidUtilities.dp(30) * (float) Math.sin(phase * 1.1f);
         paint.setShader(new RadialGradient(x2, y2, topRadius * 0.8f, blend(violet, Math.round(34 * strength)), Color.TRANSPARENT, Shader.TileMode.CLAMP));
@@ -128,7 +134,7 @@ public class ChatListGlowView extends View {
         final float bottomRadius = w * 0.75f;
         final float x3 = w * (0.7f + 0.15f * (float) Math.sin(phase * 0.7f + 1.2f));
         final float y3 = h + bottomRadius * 0.55f;
-        paint.setShader(new RadialGradient(x3, y3, bottomRadius, blend(0xFF22D3EE, Math.round(26 * strength)), Color.TRANSPARENT, Shader.TileMode.CLAMP));
+        paint.setShader(new RadialGradient(x3, y3, bottomRadius, blend(shift(0xFF22D3EE, 140f), Math.round(26 * strength)), Color.TRANSPARENT, Shader.TileMode.CLAMP));
         canvas.drawCircle(x3, y3, bottomRadius, paint);
 
         // Лёгкий белый блик, проходящий по верху списка.

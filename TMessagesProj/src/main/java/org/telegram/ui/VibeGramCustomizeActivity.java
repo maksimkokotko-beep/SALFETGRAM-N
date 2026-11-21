@@ -3,6 +3,7 @@ package org.telegram.ui;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
@@ -35,12 +36,17 @@ public class VibeGramCustomizeActivity extends BaseFragment {
             COLOR_DEFAULT, 0xFF3B82F6, 0xFF8B5CF6, 0xFF22D3EE, 0xFFF472B6, 0xFFFFB74D
     };
 
+    // Тона акцента: 0 — как в теме, дальше градусы.
+    private static final int[] ACCENT_HUES = new int[]{0, 28, 152, 275, 330};
+
     private final ArrayList<SliderRow> sliderRows = new ArrayList<>();
     private final ArrayList<View> chipViews = new ArrayList<>();
+    private final ArrayList<View> accentChipViews = new ArrayList<>();
 
     private TextCell editorCell;
     private TextCell[] presetCells = new TextCell[3];
     private TextView statusView;
+    private TextView accentStatusView;
 
     @Override
     public View createView(Context context) {
@@ -79,11 +85,22 @@ public class VibeGramCustomizeActivity extends BaseFragment {
         });
         addInfo(column, "В режиме редактора: тянешь FX аватара и круглые кнопки — позиция сохраняется. Пинч на аватаре меняет масштаб FX.");
 
+        addHeader(column, "Цвет VibeGram");
+        addAccentChips(column);
+        addSlider(column, "Свой тон", VibeGramStyle.ACCENT_HUE, 0, 360, true, 0, "°");
+        accentStatusView = new TextView(context);
+        accentStatusView.setTextSize(13);
+        accentStatusView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
+        accentStatusView.setPadding(AndroidUtilities.dp(18), 0, AndroidUtilities.dp(18), AndroidUtilities.dp(8));
+        column.addView(accentStatusView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+        addInfo(column, "0° — цвет темы. Тон красит стекло чатов, сияние, блики и северное сияние на аватарке.");
+
         addHeader(column, "Список чатов");
         addSlider(column, "Радиус карточек", VibeGramStyle.CHAT_RADIUS, 0, 40, false, 18, " dp");
         addSlider(column, "Отступ по бокам", VibeGramStyle.CHAT_INSET_H, 0, 24, false, 6, " dp");
         addSlider(column, "Отступ сверху и снизу", VibeGramStyle.CHAT_INSET_V, 0, 16, false, 3, " dp");
         addSlider(column, "Заливка стекла", VibeGramStyle.CHAT_FILL, 0, 100, true, 18, "%");
+        addSlider(column, "Подкраска стекла", VibeGramStyle.CHAT_TINT, 0, 100, true, 12, "%");
         addSlider(column, "Обводка", VibeGramStyle.CHAT_RIM, 0, 100, true, 38, "%");
         addSlider(column, "Толщина обводки", VibeGramStyle.CHAT_RIM_W, 0, 5, false, 1, " dp");
         addSlider(column, "Верхняя кромка", VibeGramStyle.CHAT_TOP, 0, 100, true, 90, "%");
@@ -92,18 +109,22 @@ public class VibeGramCustomizeActivity extends BaseFragment {
         addHeader(column, "Цвет сияния");
         addColorChips(column);
 
-        addHeader(column, "Аватар: сияние, NFT, блики");
+        addHeader(column, "Аватар: сияние и блики");
         addSlider(column, "Северное сияние", VibeGramStyle.FX_AURORA, 0, 200, true, 100, "%");
+        addSlider(column, "Масштаб сияния", VibeGramStyle.FX_AURORA_SCALE, 40, 180, true, 100, "%");
         addSlider(column, "Блик по фото", VibeGramStyle.FX_GLARE, 0, 200, true, 100, "%");
-        addSlider(column, "Стеклянных шариков", VibeGramStyle.FX_ORBS, 0, 12, true, 7, " шт");
+        addSlider(column, "Угол блика", VibeGramStyle.FX_GLARE_ANGLE, 0, 180, true, 22, "°");
+        addSlider(column, "Ширина блика", VibeGramStyle.FX_GLARE_WIDTH, 20, 160, true, 100, "%");
         addSlider(column, "Масштаб FX", VibeGramStyle.FX_SCALE, 50, 200, true, 100, "%");
 
         addHeader(column, "Круглые кнопки профиля");
         addSlider(column, "Размер кнопок", VibeGramStyle.ACTIONS_SIZE, 28, 64, true, 46, " dp");
         addSlider(column, "Прозрачность", VibeGramStyle.ACTIONS_ALPHA, 20, 100, true, 100, "%");
+        addSlider(column, "Отступ между кнопками", VibeGramStyle.ACTIONS_SPACING, 0, 28, true, 14, " dp");
 
         addHeader(column, "Переходы вкладок");
         addSlider(column, "Уменьшение второй вкладки", VibeGramStyle.TABS_SCALE, 0, 40, true, 14, "%");
+        addSlider(column, "Прозрачность неактивной вкладки", VibeGramStyle.TABS_ALPHA, 20, 100, true, 100, "%");
         addSlider(column, "Длительность", VibeGramStyle.TABS_DURATION, 200, 900, true, 540, " мс");
 
         addHeader(column, "Пресеты");
@@ -178,6 +199,7 @@ public class VibeGramCustomizeActivity extends BaseFragment {
             presetCells[i].setTextAndValue("Пресет " + (i + 1), VibeGramStyle.hasPreset(i) ? "сохранён" : "пусто", true);
         }
         refreshChips();
+        refreshAccentChips();
     }
 
     private void setStatus(CharSequence text) {
@@ -236,6 +258,55 @@ public class VibeGramCustomizeActivity extends BaseFragment {
         column.addView(row, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
     }
 
+    private int accentColorForHue(int hue) {
+        if (hue <= 0) {
+            return Theme.getColor(Theme.key_windowBackgroundWhiteBlueText);
+        }
+        return Color.HSVToColor(new float[]{hue % 360f, 0.72f, 0.98f});
+    }
+
+    private void addAccentChips(LinearLayout column) {
+        final LinearLayout row = new LinearLayout(getContext());
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(AndroidUtilities.dp(18), AndroidUtilities.dp(6), AndroidUtilities.dp(18), AndroidUtilities.dp(4));
+
+        accentChipViews.clear();
+        for (final int hue : ACCENT_HUES) {
+            final View chip = new View(getContext());
+            chip.setContentDescription(hue == 0 ? "Цвет темы" : "Свой цвет");
+            chip.setOnClickListener(v -> {
+                VibeGramStyle.setAccentHue(hue);
+                refreshAll();
+                setStatus(hue == 0 ? "Акцент снова как в теме" : "Цвет VibeGram изменён");
+            });
+            row.addView(chip, LayoutHelper.createLinear(42, 42, Gravity.CENTER_VERTICAL, 4, 0, 4, 0));
+            accentChipViews.add(chip);
+        }
+        column.addView(row, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+    }
+
+    private void refreshAccentChips() {
+        if (accentChipViews.size() != ACCENT_HUES.length) {
+            return;
+        }
+        final int selectedHue = VibeGramStyle.accentHue();
+        for (int i = 0; i < accentChipViews.size(); i++) {
+            final int hue = ACCENT_HUES[i];
+            final GradientDrawable drawable = new GradientDrawable();
+            drawable.setShape(GradientDrawable.OVAL);
+            drawable.setColor(accentColorForHue(hue));
+            drawable.setStroke(AndroidUtilities.dp(hue == selectedHue ? 3 : 1),
+                    Theme.getColor(hue == selectedHue ? Theme.key_windowBackgroundWhiteBlackText : Theme.key_divider));
+            accentChipViews.get(i).setBackground(drawable);
+        }
+        if (accentStatusView != null) {
+            final int hue = selectedHue;
+            accentStatusView.setText(hue <= 0
+                    ? "Сейчас: цвет темы"
+                    : "Сейчас: свой тон " + hue + "°");
+        }
+    }
+
     private void addColorChips(LinearLayout column) {
         final LinearLayout row = new LinearLayout(getContext());
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -265,7 +336,7 @@ public class VibeGramCustomizeActivity extends BaseFragment {
             final int color = CHIP_COLORS[i];
             final GradientDrawable drawable = new GradientDrawable();
             drawable.setShape(GradientDrawable.OVAL);
-            drawable.setColor(color == COLOR_DEFAULT ? Theme.getColor(Theme.key_windowBackgroundWhiteBlueText) : color);
+            drawable.setColor(color == COLOR_DEFAULT ? VibeGramStyle.accentColor() : color);
             drawable.setStroke(AndroidUtilities.dp(color == selected ? 3 : 1),
                     Theme.getColor(color == selected ? Theme.key_windowBackgroundWhiteBlackText : Theme.key_divider));
             chipViews.get(i).setBackground(drawable);
@@ -324,6 +395,9 @@ public class VibeGramCustomizeActivity extends BaseFragment {
                     VibeGramStyle.setInt(key, Math.round(value));
                 } else {
                     VibeGramStyle.setFloat(key, value);
+                }
+                if (VibeGramStyle.ACCENT_HUE.equals(key)) {
+                    refreshAccentChips();
                 }
             });
             addView(seekBar, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 44));

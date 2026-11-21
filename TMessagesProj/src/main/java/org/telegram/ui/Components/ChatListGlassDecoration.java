@@ -20,7 +20,7 @@ import xyz.nextalone.nagram.VibeGramStyle;
 
 /**
  * VibeGram: каждый чат в списке — стеклянная карточка с очертанием.
- * Все размеры, прозрачности и радиус берутся из редактора VibeGram.
+ * Все размеры, прозрачности, радиус и подкраска берутся из редактора VibeGram.
  */
 public class ChatListGlassDecoration extends RecyclerView.ItemDecoration {
 
@@ -34,6 +34,19 @@ public class ChatListGlassDecoration extends RecyclerView.ItemDecoration {
         return VibeGramAnims.isEnabled(VibeGramAnims.KEY_CHAT_LIST);
     }
 
+    private static int blend(int from, int to, float amount) {
+        final float t = Math.max(0f, Math.min(1f, amount));
+        return Color.argb(
+                Math.round(Color.alpha(from) + (Color.alpha(to) - Color.alpha(from)) * t),
+                Math.round(Color.red(from) + (Color.red(to) - Color.red(from)) * t),
+                Math.round(Color.green(from) + (Color.green(to) - Color.green(from)) * t),
+                Math.round(Color.blue(from) + (Color.blue(to) - Color.blue(from)) * t));
+    }
+
+    private static int withAlpha(int color, int alpha) {
+        return Color.argb(Math.max(0, Math.min(255, alpha)), Color.red(color), Color.green(color), Color.blue(color));
+    }
+
     @Override
     public void onDrawOver(@NonNull Canvas canvas, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
         if (!enabled()) {
@@ -43,11 +56,21 @@ public class ChatListGlassDecoration extends RecyclerView.ItemDecoration {
         final float radius = AndroidUtilities.dp(VibeGramStyle.chatRadius());
         final float insetH = AndroidUtilities.dp(VibeGramStyle.chatInsetH());
         final float insetV = AndroidUtilities.dp(VibeGramStyle.chatInsetV());
+        if (radius <= 0f) {
+            return;
+        }
+
+        final float tint = Math.max(0f, Math.min(1f, VibeGramStyle.chatTint() / 100f));
+        final int accent = VibeGramStyle.accentColor();
+
         final int fillAlpha = Math.round(255 * VibeGramStyle.chatFill() / 100f * (dark ? 0.45f : 2.2f));
-        final int fillTop = Color.argb(Math.min(255, fillAlpha), 255, 255, 255);
-        final int fillBottom = Color.argb(Math.min(255, Math.round(fillAlpha * 0.4f)), 255, 255, 255);
-        final int rimColor = Color.argb(Math.min(255, Math.round(255 * VibeGramStyle.chatRim() / 100f)), 255, 255, 255);
-        final int topColor = Color.argb(Math.min(255, Math.round(255 * VibeGramStyle.chatTop() / 100f)), 255, 255, 255);
+        final int fillColor = blend(0xFFFFFFFF, accent, tint * 0.55f);
+        final int fillTop = withAlpha(fillColor, Math.min(255, fillAlpha));
+        final int fillBottom = withAlpha(fillColor, Math.min(255, Math.round(fillAlpha * 0.4f)));
+        final int rimColor = withAlpha(blend(0xFFFFFFFF, accent, tint * 0.9f),
+                Math.min(255, Math.round(255 * VibeGramStyle.chatRim() / 100f)));
+        final int topColor = withAlpha(blend(0xFFFFFFFF, accent, tint * 0.45f),
+                Math.min(255, Math.round(255 * VibeGramStyle.chatTop() / 100f)));
 
         rimPaint.setStyle(Paint.Style.STROKE);
         rimPaint.setStrokeWidth(AndroidUtilities.dp(VibeGramStyle.chatRimWidth()));
@@ -56,10 +79,6 @@ public class ChatListGlassDecoration extends RecyclerView.ItemDecoration {
         topPaint.setStyle(Paint.Style.STROKE);
         topPaint.setStrokeWidth(AndroidUtilities.dp(Math.max(0.8f, VibeGramStyle.chatRimWidth() + 0.2f)));
         topPaint.setColor(topColor);
-
-        if (radius <= 0f) {
-            return;
-        }
 
         for (int i = 0; i < parent.getChildCount(); i++) {
             final View child = parent.getChildAt(i);

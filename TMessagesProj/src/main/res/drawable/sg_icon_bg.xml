@@ -6,18 +6,31 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- dark background -->
+    <!-- VibeGram: deep charcoal with a cold blue glow behind the glyph -->
     <path android:pathData="M0,0 L108,0 L108,108 L0,108 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="44"
+                android:centerY="42"
+                android:gradientRadius="78"
+                android:startColor="#1B2A44"
+                android:centerColor="#0C111B"
+                android:endColor="#04060A" />
+        </aapt:attr>
+    </path>
+
+    <!-- bottom corner shade, keeps the icon from looking flat -->
+    <path android:pathData="M0,78 L108,108 L108,108 L0,108 Z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
                 android:startX="0"
-                android:startY="0"
-                android:endX="18"
+                android:startY="78"
+                android:endX="0"
                 android:endY="108"
-                android:startColor="#1A2029"
-                android:centerColor="#0D1117"
-                android:endColor="#04060A" />
+                android:startColor="#00000000"
+                android:endColor="#66000000" />
         </aapt:attr>
     </path>
 </vector>

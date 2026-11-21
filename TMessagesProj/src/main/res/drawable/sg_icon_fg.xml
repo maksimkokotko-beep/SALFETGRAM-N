@@ -6,24 +6,30 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- one simplified paper plane, nose to the left; the notch in its tail
-         is the "V": it lives in the outline, there is no separate letter -->
-    <path android:pathData="M22,54 L84,30 L50,54 L84,78 Z">
+    <!-- VibeGram mark: a single rounded paper plane flying up-left.
+         Its nose and the fold line read as the letter V, mirrored
+         compared to the classic send arrow. -->
+    <path
+        android:pathData="M34.88,29.35 L77.12,52.65 Q85,57 78.41,63.15 L61.59,78.85 Q55,85 51.19,76.84 L30.81,33.16 Q27,25 34.88,29.35 Z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
-                android:startX="22"
-                android:startY="30"
-                android:endX="84"
-                android:endY="78"
-                android:startColor="#F4F7FB"
-                android:centerColor="#DCE4EF"
-                android:endColor="#A9B7CA" />
+                android:startX="30"
+                android:startY="26"
+                android:endX="76"
+                android:endY="80"
+                android:startColor="#F6F9FE"
+                android:centerColor="#E1E8F3"
+                android:endColor="#AEBCCF" />
         </aapt:attr>
     </path>
 
-    <!-- folded underside: gives the plane depth, keeps it one shape -->
+    <!-- fold: the crease runs from the nose into the tail and shaped the V -->
     <path
-        android:pathData="M22,54 L50,54 L84,78 Z"
-        android:fillColor="#5E6B7E" />
+        android:pathData="M31.5,28.6 L69.5,66.5"
+        android:strokeColor="#2A3646"
+        android:strokeAlpha="0.35"
+        android:strokeWidth="1.7"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
 </vector>

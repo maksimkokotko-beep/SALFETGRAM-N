@@ -46,7 +46,6 @@ import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.Utilities;
-import org.telegram.messenger.VibeProxy;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.BackDrawable;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -145,31 +144,6 @@ public class LiteModeSettingsActivity extends BaseFragment {
             } else if (item.viewType == VIEW_TYPE_SWITCH2) {
                 if (item.type == SWITCH_TYPE_VG_CUSTOMIZE) {
                     presentFragment(new VibeGramCustomizeActivity());
-                    return;
-                }
-                if (item.type == SWITCH_TYPE_VG_PROXY) {
-                    final boolean enabled = !VibeProxy.isEnabled(getContext());
-                    VibeProxy.setEnabled(getContext(), enabled);
-                    adapter.notifyItemRangeChanged(0, items.size());
-                    BulletinFactory.of(LiteModeSettingsActivity.this)
-                            .createSimpleBulletin(enabled ? R.raw.done : R.raw.info,
-                                    enabled ? "Встроенный прокси включён" : "Встроенный прокси выключен")
-                            .show();
-                    return;
-                }
-                if (item.type == SWITCH_TYPE_VG_PROXY_REFRESH) {
-                    BulletinFactory.of(LiteModeSettingsActivity.this)
-                            .createSimpleBulletin(R.raw.info, "Обновляю список прокси…")
-                            .show();
-                    VibeProxy.refreshNow(getContext(), result -> {
-                        if (getContext() == null) {
-                            return;
-                        }
-                        adapter.notifyItemRangeChanged(0, items.size());
-                        BulletinFactory.of(LiteModeSettingsActivity.this)
-                                .createSimpleBulletin(R.raw.done, result)
-                                .show();
-                    });
                     return;
                 }
                 if (item.type == SWITCH_TYPE_SMOOTH_TRANSITIONS) {
@@ -335,12 +309,6 @@ public class LiteModeSettingsActivity extends BaseFragment {
         items.add(Item.asSwitch("Редактор VibeGram", SWITCH_TYPE_VG_CUSTOMIZE));
         items.add(Item.asInfo("Цвета, прозрачность, радиусы, отступы, размер кнопок и FX, пресеты и JSON."));
 
-        items.add(Item.asHeader("Прокси VibeGram"));
-        items.add(Item.asSwitch("Встроенный прокси", SWITCH_TYPE_VG_PROXY));
-        items.add(Item.asSwitch("Обновить список прокси", SWITCH_TYPE_VG_PROXY_REFRESH));
-        items.add(Item.asInfo("Прокси включён по умолчанию и сам переключается на живой сервер. "
-                + "Список обновляется автоматически раз в несколько часов."));
-
         adapter.setItems(oldItems, items);
     }
 
@@ -408,8 +376,6 @@ public class LiteModeSettingsActivity extends BaseFragment {
     public static final int SWITCH_TYPE_VG_TABS = 9;
     public static final int SWITCH_TYPE_VG_CHAT_GLOW = 10;
     public static final int SWITCH_TYPE_VG_CUSTOMIZE = 11;
-    public static final int SWITCH_TYPE_VG_PROXY = 12;
-    public static final int SWITCH_TYPE_VG_PROXY_REFRESH = 13;
 
     private static String vibegramAnimKey(int type) {
         switch (type) {
@@ -503,18 +469,12 @@ public class LiteModeSettingsActivity extends BaseFragment {
                 switchCell.set(item, divider);
             } else if (viewType == VIEW_TYPE_SWITCH2) {
                 TextCell textCell = (TextCell) holder.itemView;
-                textCell.setSubtitle(null);
                 if (item.type == SWITCH_TYPE_SMOOTH_TRANSITIONS) {
                     SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                     boolean animations = preferences.getBoolean("view_animations", true);
                     textCell.setTextAndCheck(item.text, animations, false);
                 } else if (item.type == SWITCH_TYPE_VG_CUSTOMIZE) {
                     textCell.setTextAndValue(item.text, "›", false);
-                } else if (item.type == SWITCH_TYPE_VG_PROXY) {
-                    textCell.setTextAndCheck(item.text, VibeProxy.isEnabled(getContext()), false);
-                    textCell.setSubtitle(VibeProxy.status(getContext()));
-                } else if (item.type == SWITCH_TYPE_VG_PROXY_REFRESH) {
-                    textCell.setTextAndValue(item.text, "↻", false);
                 } else {
                     textCell.setTextAndCheck(item.text, VibeGramAnims.isOn(vibegramAnimKey(item.type)), false);
                 }
